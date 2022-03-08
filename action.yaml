@@ -1,0 +1,13 @@
+name: 'Uffizzi Preview'
+description: 'Deploy Continuous Previews on Uffizzi'
+inputs:
+  compose-file:
+    description: 'An alternate compose file'
+    required: false
+    default: 'docker-compose.yaml'
+runs:
+  using: 'docker'
+  image: 'uffizzi/uffizzi-cli'
+  args:
+    - 'preview'
+    - ${{ inputs.compose-file }}
