@@ -4,18 +4,28 @@ This action quickly deploys a Continuous Preview per a specified compose file.
 
 ## Inputs
 
-## `compose-file`
+### `compose-file`
 
-**Required** Path to a compose file within your repository.
+**Required** Path to a compose file within your repository
 
-## Outputs
+### `username`
 
-## `foo`
+**Required** Uffizzi username
 
-The bar you baz.
+### `hostname`
+
+URL of your Uffizzi installation
+
+## Secrets
+
+### `UFFIZZI_PASSWORD`
+
+Your Uffizzi password. Specify a GitHub Encrypted Secret with this name.
 
 ## Example usage
 
 uses: UffizziCloud/preview-action@v1
 with:
   compose-file: 'docker-compose.uffizzi.yaml'
+  username: 'admin@uffizzi.com'
+  hostname: 'https://app.uffizzi.com'
