@@ -25,4 +25,4 @@ runs:
   env:
     UFFIZZI_PASSWORD: ${{ secrets.UFFIZZI_PASSWORD }}
     UFFIZZI_HOSTNAME: ${{ inputs.hostname }}
-    UFFIZZI_USERNAME: ${{ inputs.username }}
+    UFFIZZI_USER: ${{ inputs.username }}
