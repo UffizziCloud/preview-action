@@ -28,9 +28,11 @@ Your Uffizzi password. Specify a GitHub Encrypted Secret with this name.
 
 ## Example usage
 
+```yaml
 uses: UffizziCloud/preview-action@v1
 with:
   compose-file: 'docker-compose.uffizzi.yaml'
   username: 'admin@uffizzi.com'
   hostname: 'https://app.uffizzi.com'
   project: 'default'
+```
