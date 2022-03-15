@@ -12,6 +12,10 @@ This action quickly deploys a Continuous Preview per a specified compose file.
 
 **Required** Uffizzi username
 
+### `project`
+
+**Required** Uffizzi project name
+
 ### `hostname`
 
 URL of your Uffizzi installation
@@ -29,3 +33,4 @@ with:
   compose-file: 'docker-compose.uffizzi.yaml'
   username: 'admin@uffizzi.com'
   hostname: 'https://app.uffizzi.com'
+  project: 'default'
