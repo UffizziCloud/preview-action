@@ -20,11 +20,9 @@ This action quickly deploys a Continuous Preview per a specified compose file.
 
 URL of your Uffizzi installation
 
-## Secrets
+### `password`
 
-### `UFFIZZI_PASSWORD`
-
-Your Uffizzi password. Specify a GitHub Encrypted Secret with this name.
+Your Uffizzi password. Specify a GitHub Encrypted Secret and use it! See example below.
 
 ## Example usage
 
@@ -35,4 +33,5 @@ with:
   username: 'admin@uffizzi.com'
   hostname: 'https://app.uffizzi.com'
   project: 'default'
+  password: ${{ secrets.UFFIZZI_PASSWORD }}
 ```
