@@ -22,9 +22,14 @@ inputs:
   project:
     description: 'Uffizzi project name'
     required: true
+outputs:
+  url:
+    description: 'URL where preview was deployed, if successful'
+  id:
+    description: 'ID of prevew for later reference'
 runs:
   using: 'docker'
-  image: 'docker://uffizzi/cli:qa'
+  image: 'docker://uffizzi/cli:gha'
   args:
     - 'preview'
     - 'create'
