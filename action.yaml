@@ -33,6 +33,7 @@ runs:
   args:
     - 'preview'
     - 'create'
+    - '--output=github-action'
     - ${{ inputs.compose-file }}
   env:
     UFFIZZI_PASSWORD: ${{ inputs.password }}
