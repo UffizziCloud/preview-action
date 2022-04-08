@@ -9,7 +9,7 @@ inputs:
     description: 'An alternate compose file'
     required: false
     default: 'docker-compose.yaml'
-  hostname:
+  server:
     description: 'URL to Uffizzi'
     required: false
     default: 'https://app.uffizzi.com'
@@ -29,13 +29,13 @@ outputs:
     description: 'ID of prevew for later reference'
 runs:
   using: 'docker'
-  image: 'docker://uffizzi/cli:gha'
+  image: 'docker://uffizzi/cli:2022-04-08'
   args:
     - 'preview'
     - 'create'
     - ${{ inputs.compose-file }}
   env:
     UFFIZZI_PASSWORD: ${{ inputs.password }}
-    UFFIZZI_HOSTNAME: ${{ inputs.hostname }}
+    UFFIZZI_SERVER: ${{ inputs.server }}
     UFFIZZI_USER: ${{ inputs.username }}
     UFFIZZI_PROJECT: ${{ inputs.project }}
