@@ -1,5 +1,5 @@
 name: 'Uffizzi Preview'
-description: 'Deploy Full-Stack Previews (on-demand, ephemeral environments) with Uffizzi'
+description: 'GitHub Action to Create Full-Stack Previews with Docker Compose, Uffizzi, and Kubernetes'
 author: 'Adam Vollrath'
 branding:
   color: 'yellow'
