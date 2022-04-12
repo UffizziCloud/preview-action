@@ -1,6 +1,6 @@
-# Uffizzi Preview docker action
+# Deploy Preview Environment to K8s
 
-This action quickly deploys a Continuous Preview per a specified compose file.
+This action uses Uffizzi CLI `uffizzi preview create` to deploy an an on-demand, ephermal test environment onto your Kubernetes cluster.
 
 ## Inputs
 
