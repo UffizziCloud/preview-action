@@ -1,5 +1,5 @@
 name: 'Uffizzi Preview'
-description: 'Deploy Continuous Previews on Uffizzi'
+description: 'Deploy Full-Stack Previews (on-demand, ephemeral environments) with Uffizzi'
 author: 'Adam Vollrath'
 branding:
   color: 'yellow'
