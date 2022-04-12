@@ -1,6 +1,6 @@
-# Deploy Preview Environment to K8s
+# Deploy Full-Stack Preview Environment to K8s
 
-This action uses Uffizzi CLI `uffizzi preview create` to deploy an an on-demand, ephermal test environment onto your Kubernetes cluster.
+Open Source Uffizzi CLI `uffizzi preview create` to deploy an an on-demand, ephermal test environment onto your Kubernetes cluster.
 
 ## Inputs
 
