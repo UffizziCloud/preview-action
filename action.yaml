@@ -1,5 +1,5 @@
-name: 'Uffizzi Preview'
-description: 'GitHub Action to Create Full-Stack Previews with Docker Compose, Uffizzi, and Kubernetes'
+name: 'Uffizzi Preview Create'
+description: 'Open Source GHA to Create Full-Stack Previews with Docker Compose, Uffizzi, and Kubernetes'
 author: 'Adam Vollrath'
 branding:
   color: 'yellow'
