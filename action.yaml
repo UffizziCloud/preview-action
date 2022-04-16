@@ -1,5 +1,5 @@
 name: 'Uffizzi Preview Create'
-description: 'Open Source GHA to Create Full-Stack On-demand Ephemeral Preview Environments with Docker Compose, Uffizzi, and Kubernetes'
+description: 'Create Full-Stack Preview Environments (on-demand, ephemeral) with Docker Compose, Uffizzi, and Kubernetes (Open Source)'
 author: 'Adam Vollrath'
 branding:
   color: 'yellow'
