@@ -1,4 +1,4 @@
-name: 'Create Uffizzi Preview Environment'
+name: 'Create Preview Environment'
 description: 'Deploy a Full-Stack Preview Environment (on-demand, ephemeral) with Uffizzi Open Source (Compose + Uffizzi + Kubernetes)'
 author: 'Adam Vollrath'
 branding:
