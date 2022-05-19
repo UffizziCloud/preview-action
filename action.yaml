@@ -29,7 +29,7 @@ outputs:
     description: 'ID of prevew for later reference'
 runs:
   using: 'docker'
-  image: 'docker://uffizzi/cli:2022-04-12'
+  image: 'docker://uffizzi/cli:qa'
   args:
     - 'preview'
     - 'create'
