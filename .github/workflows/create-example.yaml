@@ -1,0 +1,90 @@
+name: Create Uffizzi Preview Example
+
+on:
+  workflow_call:
+    inputs:
+      compose-file:
+        description: "Docker Compose file ready to deploy"
+        required: true
+        type: string
+      username:
+        description: "Uffizzi username for login, usually an email address"
+        required: true
+        type: string
+      server:
+        description: "Uffizzi server URL"
+        default: https://app.uffizzi.com
+        required: false
+        type: string
+      project:
+        description: "Uffizzi project name"
+        default: default
+        required: false
+        type: string
+
+    secrets:
+      password:
+        description: "Uffizzi password for login"
+        required: true
+
+    outputs:
+      url:
+        description: "URL to Uffizzi Preview Environment"
+        value: ${{ jobs.deploy-uffizzi-preview.outputs.url }}
+      id:
+        description: "Uffizzi Preview Deployment ID"
+        value: ${{ jobs.deploy-uffizzi-preview.outputs.id }}
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  deploy-uffizzi-preview:
+    name: Preview on Uffizzi
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-20.04
+    outputs:
+      url: ${{ steps.preview.outputs.url }}
+      id: ${{ steps.preview.outputs.id }}
+    environment:
+      name: ${{ steps.preview.outputs.id }}
+      url: ${{ steps.preview.outputs.url }}
+    steps:
+      - name: Deploy preview
+        id: preview
+        uses: UffizziCloud/preview-action@latest
+        with:
+          compose-file: 'docker-compose.rendered.yml'
+          username: ${{ inputs.username }}
+          server: ${{ inputs.server }}
+          project: ${{ inputs.project }}
+          password: ${{ secrets.password }}
+      - name: Check outputs
+        run: echo "${{ steps.preview.outputs.id }} at ${{ steps.preview.outputs.url }}"
+      - name: Confirm Successful Preview Deployment
+        uses: docker://curlimages/curl:7.82.0
+        with:
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.preview.outputs.url }}
+
+      # If PR, put deployment URL and ID in the PR comments
+      - name: Find comment for deployment URL
+        uses: peter-evans/find-comment@v1
+        if: github.event_name == 'pull_request'
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Uffizzi Preview deployed
+      - name: Create or update comment for deployment URL
+        uses: peter-evans/create-or-update-comment@v1
+        if: github.event_name == 'pull_request'
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Uffizzi Preview deployed:
+            ${{ steps.preview.outputs.url }}
+
+            Uffizzi Preview ID: `${{ steps.preview.outputs.id }}`
+          edit-mode: replace
