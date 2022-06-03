@@ -47,9 +47,6 @@ jobs:
     outputs:
       url: ${{ steps.preview.outputs.url }}
       id: ${{ steps.preview.outputs.id }}
-    environment:
-      name: ${{ steps.preview.outputs.id }}
-      url: ${{ steps.preview.outputs.url }}
     steps:
       - name: Deploy preview
         id: preview
