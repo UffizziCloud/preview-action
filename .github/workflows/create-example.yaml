@@ -52,7 +52,7 @@ jobs:
         id: cache
         uses: actions/cache@v3
         with:
-          path: .
+          path: docker-compose.rendered.yml
           key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy preview
         id: preview
