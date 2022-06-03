@@ -3,8 +3,8 @@ name: Create Uffizzi Preview Example
 on:
   workflow_call:
     inputs:
-      compose-file:
-        description: "Docker Compose file ready to deploy"
+      compose-file-cache-key:
+        description: "GHA Cache Key for Docker Compose file ready to deploy"
         required: true
         type: string
       username:
@@ -48,6 +48,11 @@ jobs:
       url: ${{ steps.preview.outputs.url }}
       id: ${{ steps.preview.outputs.id }}
     steps:
+      - name: Fetch cached Compose File
+        id: cache
+        uses: actions/cache@v3
+        with:
+          key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy preview
         id: preview
         uses: UffizziCloud/preview-action@latest
