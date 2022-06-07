@@ -82,7 +82,7 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Uffizzi Preview `${{ steps.update-preview.outputs.id }}` was deleted.
+            Uffizzi Preview `${{ steps.parse-comment.outputs.id }}` was deleted.
           edit-mode: replace
 
       - name: Fetch cached Compose File
@@ -118,7 +118,7 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Uffizzi Preview deployed:
+            Uffizzi Preview deployed at URL:
             ${{ steps.create-preview.outputs.url }}
 
             Uffizzi Preview ID: `${{ steps.create-preview.outputs.id }}`
@@ -151,7 +151,7 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Uffizzi Preview deployed:
+            Uffizzi Preview updated at URL:
             ${{ steps.update-preview.outputs.url }}
 
             Uffizzi Preview ID: `${{ steps.update-preview.outputs.id }}`
