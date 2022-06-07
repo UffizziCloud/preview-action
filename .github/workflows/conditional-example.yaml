@@ -67,7 +67,7 @@ jobs:
         run: 'echo ${{ steps.parse-comment.outputs.id }}'
 
       - name: Delete Preview from Uffizzi
-        if: ${{ github.event.action == 'closed' steps.parse-comment.outputs.id != '' }}
+        if: ${{ github.event.action == 'closed' && steps.parse-comment.outputs.id != '' }}
         uses: UffizziCloud/delete-preview-action@main
         with:
           id: ${{ steps.parse-comment.outputs.id }}
