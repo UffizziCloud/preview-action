@@ -75,6 +75,15 @@ jobs:
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
+      - name: Update comment with deletion.
+        uses: peter-evans/create-or-update-comment@v2
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Uffizzi Preview `${{ steps.update-preview.outputs.id }}` was deleted.
+          edit-mode: replace
 
       - name: Fetch cached Compose File
         id: cache
@@ -85,7 +94,7 @@ jobs:
           key: ${{ inputs.compose-file-cache-key }}
 
       - name: Deploy New Preview
-        id: preview
+        id: create-preview
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
         uses: UffizziCloud/preview-action@latest
         with:
@@ -94,9 +103,31 @@ jobs:
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
+      - name: Check outputs
+        if: ${{ github.event.action != 'closed' }}
+        run: echo "${{ steps.create-preview.outputs.id }} at ${{ steps.create-preview.outputs.url }}"
+      - name: Confirm Successful Preview Deployment
+        if: ${{ github.event.action != 'closed' }}
+        uses: docker://curlimages/curl:7.82.0
+        with:
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
+      - name: Create or update comment for deployment URL
+        uses: peter-evans/create-or-update-comment@v2
+        if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Uffizzi Preview deployed:
+            ${{ steps.create-preview.outputs.url }}
+
+            Uffizzi Preview ID: `${{ steps.create-preview.outputs.id }}`
+          edit-mode: replace
+          reactions: rocket
+
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
-        id: preview
+        id: update-preview
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         with:
           preview-id: ${{ steps.parse-comment.outputs.id }}
@@ -107,13 +138,12 @@ jobs:
           password: ${{ secrets.password }}
       - name: Check outputs
         if: ${{ github.event.action != 'closed' }}
-        run: echo "${{ steps.preview.outputs.id }} at ${{ steps.preview.outputs.url }}"
+        run: echo "${{ steps.update-preview.outputs.id }} at ${{ steps.update-preview.outputs.url }}"
       - name: Confirm Successful Preview Deployment
         if: ${{ github.event.action != 'closed' }}
         uses: docker://curlimages/curl:7.82.0
         with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.preview.outputs.url }}
-
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
       - name: Create or update comment for deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
@@ -122,8 +152,8 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             Uffizzi Preview deployed:
-            ${{ steps.preview.outputs.url }}
+            ${{ steps.update-preview.outputs.url }}
 
-            Uffizzi Preview ID: `${{ steps.preview.outputs.id }}`
+            Uffizzi Preview ID: `${{ steps.update-preview.outputs.id }}`
           edit-mode: replace
-          reactions: rocket
+          reactions: +1
