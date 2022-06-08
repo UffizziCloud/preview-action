@@ -1,10 +1,14 @@
-name: Uffizzi Preview Example with Conditions
+name: Reusable Uffizzi Preview Workflow
 
 on:
   workflow_call:
     inputs:
       compose-file-cache-key:
         description: "GHA Cache Key for Docker Compose file ready to deploy"
+        required: true
+        type: string
+      compose-file-cache-path:
+        description: "GHA Cache Path for Docker Compose file ready to deploy"
         required: true
         type: string
       username:
@@ -90,7 +94,7 @@ jobs:
         if: ${{ github.event.action != 'closed' }}
         uses: actions/cache@v3
         with:
-          path: docker-compose.rendered.yml
+          path: ${{ inputs.compose-file-cache-path }}
           key: ${{ inputs.compose-file-cache-key }}
 
       - name: Deploy New Preview
@@ -98,7 +102,7 @@ jobs:
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
         uses: UffizziCloud/preview-action@latest
         with:
-          compose-file: 'docker-compose.rendered.yml'
+          compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
@@ -131,7 +135,7 @@ jobs:
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         with:
           preview-id: ${{ steps.parse-comment.outputs.id }}
-          compose-file: 'docker-compose.rendered.yml'
+          compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
@@ -156,4 +160,4 @@ jobs:
 
             Uffizzi Preview ID: `${{ steps.update-preview.outputs.id }}`
           edit-mode: replace
-          reactions: +1
+          reactions: '+1'
