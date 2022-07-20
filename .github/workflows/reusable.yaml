@@ -117,7 +117,7 @@ jobs:
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
         run: echo "${{ steps.create-preview.outputs.id }} at ${{ steps.create-preview.outputs.url }}"
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && ! secrets.url-password }}
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && secrets.url-password == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
