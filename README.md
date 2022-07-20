@@ -114,7 +114,11 @@ URL of your Uffizzi installation
 
 #### `password`
 
-Your Uffizzi password. Specify a GitHub Encrypted Secret and use it! See example above.
+**Required** Your Uffizzi password. Specify a GitHub Encrypted Secret and use it! See example above.
+
+#### `url_username` and `url_password`
+
+If you're controlling access to your Environments' URL's, set the credentials here so the workflow can confirm successful deployment.
 
 # The Action Itself
 
