@@ -30,10 +30,10 @@ on:
       password:
         description: "Uffizzi password for login"
         required: true
-      url_username:
+      url-username:
         description: "Username for authenticating to each Environment"
         required: false
-      url_password:
+      url-password:
         description: "Password for authentication to each Environment"
         required: false
 
@@ -117,15 +117,15 @@ jobs:
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
         run: echo "${{ steps.create-preview.outputs.id }} at ${{ steps.create-preview.outputs.url }}"
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && ! secrets.url_password }}
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && ! secrets.url-password }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && secrets.url_password }}
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && secrets.url-password }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --basic --user ${{ secrets.url_username }}:${{ secrets.url_password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
       - name: Create or update comment for deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
