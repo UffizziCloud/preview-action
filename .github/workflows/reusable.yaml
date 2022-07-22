@@ -37,7 +37,7 @@ on:
         description: "Password for authentication to each Environment"
         required: false
       personal-access-token:
-        descrption: "GitHub personal access token with access to container registry"
+        description: "GitHub personal access token with access to container registry"
         required: false
 
     outputs:
