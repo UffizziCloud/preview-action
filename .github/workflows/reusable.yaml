@@ -159,11 +159,21 @@ jobs:
       - name: Check outputs
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         run: echo "${{ steps.update-preview.outputs.id }} at ${{ steps.update-preview.outputs.url }}"
+      - name: Check if URL Authentication is in use
+        # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
+        id: url-auth
+        shell: bash
+        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
-        uses: docker://curlimages/curl:7.82.0
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth.outputs.enabled == '' }}
+        uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
+      - name: Confirm Successful Preview Deployment with Authentication
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth.outputs.enabled == 'true' }}
+        uses: docker://curlimages/curl:7.84.0
+        with:
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
       - name: Create or update comment for deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
