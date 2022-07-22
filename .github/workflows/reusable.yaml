@@ -118,16 +118,16 @@ jobs:
         run: echo "${{ steps.create-preview.outputs.id }} at ${{ steps.create-preview.outputs.url }}"
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
-        id: url-auth
+        id: url-auth-for-create
         shell: bash
         run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth.outputs.enabled == '' }}
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth.outputs.enabled == 'true' }}
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
@@ -161,16 +161,16 @@ jobs:
         run: echo "${{ steps.update-preview.outputs.id }} at ${{ steps.update-preview.outputs.url }}"
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
-        id: url-auth
+        id: url-auth-for-update
         shell: bash
         run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth.outputs.enabled == '' }}
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth-for-update.outputs.enabled == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth.outputs.enabled == 'true' }}
+        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth-for-update.outputs.enabled == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
