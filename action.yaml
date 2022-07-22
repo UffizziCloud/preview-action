@@ -22,6 +22,12 @@ inputs:
   project:
     description: 'Uffizzi project name'
     required: true
+  ghcr-username:
+    description: 'Username to authenticate to GHCR'
+    required: false
+  ghcr-access-token:
+    descrption: 'Password to authenticate to GHCR'
+    required: false
 outputs:
   url:
     description: 'URL where preview was deployed, if successful'
@@ -40,3 +46,5 @@ runs:
     UFFIZZI_SERVER: ${{ inputs.server }}
     UFFIZZI_USER: ${{ inputs.username }}
     UFFIZZI_PROJECT: ${{ inputs.project }}
+    GITHUB_USERNAME: ${{ inputs.ghcr-username }}
+    GITHUB_ACCESS_TOKEN: ${{ inputs.ghcr-access-token }}

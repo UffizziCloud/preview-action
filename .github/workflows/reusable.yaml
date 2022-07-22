@@ -36,6 +36,9 @@ on:
       url-password:
         description: "Password for authentication to each Environment"
         required: false
+      personal-access-token:
+        descrption: "GitHub personal access token with access to container registry"
+        required: false
 
     outputs:
       url:
@@ -106,13 +109,15 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
-        uses: UffizziCloud/preview-action@latest
+        uses: UffizziCloud/preview-action@add_credentials
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
+          ghcr-username: ${{ github.actor }}
+          ghcr-access-token: ${{ secrets.personal-access-token }}
       - name: Check outputs
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
         run: echo "${{ steps.create-preview.outputs.id }} at ${{ steps.create-preview.outputs.url }}"
@@ -146,7 +151,7 @@ jobs:
           reactions: rocket
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@v1
+        uses: UffizziCloud/update-preview-action@add_credentials
         id: update-preview
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         with:
@@ -156,6 +161,8 @@ jobs:
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
+          ghcr-username: ${{ github.actor }}
+          ghcr-access-token: ${{ secrets.personal-access-token }}
       - name: Check outputs
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         run: echo "${{ steps.update-preview.outputs.id }} at ${{ steps.update-preview.outputs.url }}"

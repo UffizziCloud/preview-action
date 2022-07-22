@@ -74,7 +74,7 @@ jobs:
   deploy-uffizzi-preview:
     name: Use Remote Workflow to Preview on Uffizzi
     needs: render-compose-file
-    uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml
+    uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2
     with:
       compose-file-cache-key: ${{ needs.render-compose-file.outputs.compose-file-cache-key }}
       compose-file-cache-path: ${{ needs.render-compose-file.outputs.compose-file-cache-path }}
@@ -120,6 +120,12 @@ URL of your Uffizzi installation
 
 If you're controlling access to your Environments' URL's, set the credentials here so the workflow can confirm successful deployment.
 
+#### `personal-access-token`
+
+Value of a [Github personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with access to the `read:packages` scope.
+
+This option is provided as a convenience to get started quickly. For sensitive repositories, we recommend instead connecting your Uffizzi account to GHCR via the web interface or by executing `uffizzi connect ghcr` from a trusted environment.
+
 # The Action Itself
 
 If you wish to use this action by itself outside of the reusable workflow, you can. It will only create new previews, not update nor delete.
@@ -145,6 +151,12 @@ URL of your Uffizzi installation
 ### `password`
 
 Your Uffizzi password. Specify a GitHub Encrypted Secret and use it! See example below.
+
+### `ghcr-username` and `ghcr-access-token`
+
+Your GitHub username and the value of a [Github personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with access to the `read:packages` scope.
+
+This option is provided as a convenience to get started quickly. For sensitive repositories, we recommend instead connecting your Uffizzi account to GHCR via the web interface or by executing `uffizzi connect ghcr` from a trusted environment.
 
 ## Example usage
 
