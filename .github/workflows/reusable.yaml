@@ -81,7 +81,7 @@ jobs:
 
       - name: Delete Preview from Uffizzi
         if: ${{ github.event.action == 'closed' && steps.parse-comment.outputs.id != '' }}
-        uses: UffizziCloud/delete-preview-action@main
+        uses: UffizziCloud/delete-preview-action@v1.0.0
         with:
           id: ${{ steps.parse-comment.outputs.id }}
           username: ${{ inputs.username }}
@@ -109,7 +109,7 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
-        uses: UffizziCloud/preview-action@add_credentials
+        uses: UffizziCloud/preview-action@v2.2.0
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
@@ -151,7 +151,7 @@ jobs:
           reactions: rocket
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@add_credentials
+        uses: UffizziCloud/update-preview-action@v1.1.0
         id: update-preview
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         with:
