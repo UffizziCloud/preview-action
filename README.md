@@ -1,6 +1,6 @@
-# Deploy Full-Stack Preview Environment to K8s
+# On-demand Environments-as-a-Service
 
-Uses Open Source Uffizzi CLI `uffizzi preview create` to deploy an on-demand, ephemeral test environment onto your Kubernetes cluster.
+Integrates as an event-driven step in your CI/CD pipeline to manage on-demand, ephemeral test environments for every feature branch.  Runs on [Uffizzi Platform](https://uffizzi.com) or your own open source [installation](https://github.com/UffizziCloud/uffizzi_app) on Kubernetes. 
 
 ## Reusable Workflow
 
