@@ -13,7 +13,7 @@ on:
         type: string
       username:
         description: "Uffizzi username for login, usually an email address"
-        required: true
+        required: false
         type: string
       server:
         description: "Uffizzi server URL"
@@ -25,11 +25,10 @@ on:
         default: default
         required: false
         type: string
-
     secrets:
       password:
         description: "Uffizzi password for login"
-        required: true
+        required: false
       url-username:
         description: "Username for authenticating to each Environment"
         required: false
@@ -38,6 +37,12 @@ on:
         required: false
       personal-access-token:
         description: "GitHub personal access token with access to container registry"
+        required: false
+      dockerhub-username:
+        description: 'DockerHub username'
+        required: false
+      dockerhub-password:
+        description: 'DockerHub password'
         required: false
 
     outputs:
@@ -51,6 +56,7 @@ on:
 permissions:
   contents: read
   pull-requests: write
+  id-token: write
 
 jobs:
   uffizzi-preview:
@@ -70,6 +76,14 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: 'Uffizzi Preview ID:'
           direction: last
+      - name: Obtain an OIDC token from GHA
+        id: oidc-token
+        run: |
+          OIDC_TOKEN=$(curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=uffizzi" -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN")
+          echo "::set-output name=id_token::${OIDC_TOKEN}"
+
+      - name: Check output of the token
+        run: echo "${{ steps.oidc-token.outputs.id_token }}"
 
       - name: Parse Comment for Preview Deployment ID
         id: parse-comment
@@ -88,6 +102,7 @@ jobs:
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
+          oidc-token: ${{ steps.oidc-token.outputs.id_token }}
       - name: Update comment with deletion.
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
@@ -105,11 +120,10 @@ jobs:
         with:
           path: ${{ inputs.compose-file-cache-path }}
           key: ${{ inputs.compose-file-cache-key }}
-
       - name: Deploy New Preview
         id: create-preview
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
-        uses: UffizziCloud/preview-action@v2
+        uses: UffizziCloud/preview-action@feature/#9_automatic_account_creation
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
@@ -118,6 +132,10 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
+          oidc-token: ${{ steps.oidc-token.outputs.id_token }}
+          dockerhub-username: ${{ secrets.dockerhub-username }}
+          dockerhub-password: ${{ secrets.dockerhub-username }}
+
       - name: Check outputs
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
         run: echo "${{ steps.create-preview.outputs.id }} at ${{ steps.create-preview.outputs.url }}"
@@ -166,6 +184,9 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
+          oidc-token: ${{ inputs.oidc-token }}
+          dockerhub-username: ${{ secrets.dockerhub-username }}
+          dockerhub-password: ${{ secrets.dockerhub-username }}
       - name: Check outputs
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         run: echo "${{ steps.update-preview.outputs.id }} at ${{ steps.update-preview.outputs.url }}"
