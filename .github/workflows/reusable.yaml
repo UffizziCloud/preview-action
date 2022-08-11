@@ -146,6 +146,9 @@ jobs:
             Uffizzi Preview deployed at URL:
             ${{ steps.create-preview.outputs.url }}
 
+            Uffizzi Preview deployment details at URI:
+            ${{ steps.create-preview.outputs.containers_uri }}
+
             Uffizzi Preview ID: `${{ steps.create-preview.outputs.id }}`
           edit-mode: replace
           reactions: rocket

@@ -26,13 +26,15 @@ inputs:
     description: 'Username to authenticate to GHCR'
     required: false
   ghcr-access-token:
-    descrption: 'Password to authenticate to GHCR'
+    description: 'Password to authenticate to GHCR'
     required: false
 outputs:
   url:
     description: 'URL where preview was deployed, if successful'
   id:
-    description: 'ID of prevew for later reference'
+    description: 'ID of preview for later reference'
+  containers_uri:
+    description: 'URI to the deployment details'
 runs:
   using: 'docker'
   image: 'docker://uffizzi/cli:v0.11.4'
