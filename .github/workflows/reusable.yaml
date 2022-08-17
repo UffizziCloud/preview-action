@@ -76,15 +76,16 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: 'Uffizzi Preview ID:'
           direction: last
-      - name: Obtain an OIDC token from GHA
-        id: oidc-token
-        run: |
-          OIDC_TOKEN=$(curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=uffizzi" -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN")
-          echo "::set-output name=id_token::${OIDC_TOKEN}"
-
-      - name: Check output of the token
-        run: echo "${{ steps.oidc-token.outputs.id_token }}"
-
+      - name: Obtain an a job token and an OIDC token request url from GHA
+        uses: actions/github-script@v6
+        id: ci-job-token
+        with:
+          debug: true
+          script: |
+            const token = process.env['ACTIONS_RUNTIME_TOKEN']
+            const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
+            core.setOutput('request-token', token.trim())
+            core.setOutput('request-token-url', runtimeUrl.trim())
       - name: Parse Comment for Preview Deployment ID
         id: parse-comment
         if: ${{ steps.find-comment.outputs.comment-id != '' }}
@@ -95,14 +96,15 @@ jobs:
 
       - name: Delete Preview from Uffizzi
         if: ${{ github.event.action == 'closed' && steps.parse-comment.outputs.id != '' }}
-        uses: UffizziCloud/delete-preview-action@v1.0.0
+        uses: UffizziCloud/delete-preview-action@feature/#76_authentication_from_oidc_token
         with:
           id: ${{ steps.parse-comment.outputs.id }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
-          oidc-token: ${{ steps.oidc-token.outputs.id_token }}
+          request-token: ${{ steps.ci-job-token.outputs.request-token }}
+          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
       - name: Update comment with deletion.
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
@@ -132,9 +134,10 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
-          oidc-token: ${{ steps.oidc-token.outputs.id_token }}
+          request-token: ${{ steps.ci-job-token.outputs.request-token }}
+          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
-          dockerhub-password: ${{ secrets.dockerhub-username }}
+          dockerhub-password: ${{ secrets.dockerhub-password }}
 
       - name: Check outputs
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
@@ -172,7 +175,7 @@ jobs:
           reactions: rocket
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@v1
+        uses: UffizziCloud/update-preview-action@feature/#76-update-by-oidc-token
         id: update-preview
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         with:
@@ -184,9 +187,10 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
-          oidc-token: ${{ inputs.oidc-token }}
+          request-token: ${{ steps.ci-job-token.outputs.request-token }}
+          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
-          dockerhub-password: ${{ secrets.dockerhub-username }}
+          dockerhub-password: ${{ secrets.dockerhub-password }}
       - name: Check outputs
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         run: echo "${{ steps.update-preview.outputs.id }} at ${{ steps.update-preview.outputs.url }}"
