@@ -96,7 +96,7 @@ jobs:
 
       - name: Delete Preview from Uffizzi
         if: ${{ github.event.action == 'closed' && steps.parse-comment.outputs.id != '' }}
-        uses: UffizziCloud/delete-preview-action@feature/#76_authentication_from_oidc_token
+        uses: UffizziCloud/delete-preview-action@v1
         with:
           id: ${{ steps.parse-comment.outputs.id }}
           username: ${{ inputs.username }}
@@ -125,7 +125,7 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
-        uses: UffizziCloud/preview-action@feature/#9_automatic_account_creation
+        uses: UffizziCloud/preview-action@v2
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
@@ -175,7 +175,7 @@ jobs:
           reactions: rocket
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@feature/#76-update-by-oidc-token
+        uses: UffizziCloud/update-preview-action@v1
         id: update-preview
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         with:
