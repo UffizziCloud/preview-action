@@ -100,11 +100,11 @@ jobs:
 
 #### `username`
 
-**Required** Uffizzi username
+Uffizzi username
 
 #### `project`
 
-**Required** Uffizzi project name
+Uffizzi project name
 
 #### `server`
 
@@ -114,7 +114,7 @@ URL of your Uffizzi installation
 
 #### `password`
 
-**Required** Your Uffizzi password. Specify a GitHub Encrypted Secret and use it! See example above.
+Your Uffizzi password. Specify a GitHub Encrypted Secret and use it! See example above.
 
 #### `url-username` and `url-password`
 
@@ -138,11 +138,11 @@ If you wish to use this action by itself outside of the reusable workflow, you c
 
 ### `username`
 
-**Required** Uffizzi username
+Uffizzi username
 
 ### `project`
 
-**Required** Uffizzi project name
+Uffizzi project name
 
 ### `server`
 
@@ -158,6 +158,10 @@ Your GitHub username and the value of a [Github personal access token](https://d
 
 This option is provided as a convenience to get started quickly. For sensitive repositories, we recommend instead connecting your Uffizzi account to GHCR via the web interface or by executing `uffizzi connect ghcr` from a trusted environment.
 
+### `dockerhub-username` and `dockerhub-password`
+
+Your DockerHub username and password.
+
 ## Example usage
 
 ```yaml
@@ -168,4 +172,17 @@ with:
   server: 'https://app.uffizzi.com'
   project: 'default'
   password: ${{ secrets.UFFIZZI_PASSWORD }}
+```
+
+## If you don't have a Uffizzi account
+
+If you don't have a Uffizzi account, leave the username, password and project inputs blank. Uffizzi will create a Uffizzi account based on the information about the current repository and Github user.
+
+Example usage without an account:
+
+```yaml
+uses: UffizziCloud/preview-action@v2
+with:
+  compose-file: 'docker-compose.uffizzi.yaml'
+  server: 'https://app.uffizzi.com'
 ```

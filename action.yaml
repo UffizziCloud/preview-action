@@ -11,22 +11,34 @@ inputs:
     default: 'docker-compose.yaml'
   server:
     description: 'URL to Uffizzi'
-    required: false
+    required: true
     default: 'https://app.uffizzi.com'
   username:
     description: 'Uffizzi username'
-    required: true
+    required: false
   password:
     description: 'Uffizzi password'
-    required: true
+    required: false
   project:
     description: 'Uffizzi project name'
-    required: true
+    required: false
   ghcr-username:
     description: 'Username to authenticate to GHCR'
     required: false
   ghcr-access-token:
     description: 'Password to authenticate to GHCR'
+    required: false
+  request-token:
+    descrption: 'A token to access the pipeline information'
+    required: false
+  request-token-url:
+    descrption: 'A url where the pipeline information can be accessed'
+    required: false
+  dockerhub-username:
+    descrption: 'DockerHub username'
+    required: false
+  dockerhub-password:
+    descrption: 'DockerHub password'
     required: false
 outputs:
   url:
@@ -37,7 +49,7 @@ outputs:
     description: 'URI to the deployment details'
 runs:
   using: 'docker'
-  image: 'docker://uffizzi/cli:v0.11.4'
+  image: 'docker://uffizzi/cli:v1'
   args:
     - 'preview'
     - 'create'
@@ -50,3 +62,8 @@ runs:
     UFFIZZI_PROJECT: ${{ inputs.project }}
     GITHUB_USERNAME: ${{ inputs.ghcr-username }}
     GITHUB_ACCESS_TOKEN: ${{ inputs.ghcr-access-token }}
+    REQUEST_TOKEN: ${{ inputs.request-token}}
+    REQUEST_TOKEN_URL: ${{ inputs.request-token-url }}
+    DOCKERHUB_USERNAME: ${{ inputs.dockerhub-username }}
+    DOCKERHUB_PASSWORD: ${{ inputs.dockerhub-password}}
+
