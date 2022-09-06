@@ -142,7 +142,7 @@ Uffizzi username
 
 ### `project`
 
-Uffizzi project name
+Uffizzi project slug
 
 ### `server`
 
