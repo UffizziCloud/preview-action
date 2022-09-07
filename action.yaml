@@ -40,8 +40,6 @@ inputs:
   dockerhub-password:
     descrption: 'DockerHub password'
     required: false
-  debug_mode:
-    default: false
 outputs:
   url:
     description: 'URL where preview was deployed, if successful'
@@ -68,5 +66,4 @@ runs:
     REQUEST_TOKEN_URL: ${{ inputs.request-token-url }}
     DOCKERHUB_USERNAME: ${{ inputs.dockerhub-username }}
     DOCKERHUB_PASSWORD: ${{ inputs.dockerhub-password}}
-    DEBUG_MODE: ${{ inputs.debug_mode }}
 
