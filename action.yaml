@@ -20,7 +20,7 @@ inputs:
     description: 'Uffizzi password'
     required: false
   project:
-    description: 'Uffizzi project name'
+    description: 'Uffizzi project slug'
     required: false
   ghcr-username:
     description: 'Username to authenticate to GHCR'

@@ -142,7 +142,7 @@ Uffizzi username
 
 ### `project`
 
-Uffizzi project name
+Uffizzi project slug
 
 ### `server`
 
@@ -172,6 +172,10 @@ with:
   server: 'https://app.uffizzi.com'
   project: 'default'
   password: ${{ secrets.UFFIZZI_PASSWORD }}
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
 ```
 
 ## If you don't have a Uffizzi account
@@ -185,4 +189,8 @@ uses: UffizziCloud/preview-action@v2
 with:
   compose-file: 'docker-compose.uffizzi.yaml'
   server: 'https://app.uffizzi.com'
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
 ```
