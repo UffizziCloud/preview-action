@@ -44,7 +44,36 @@ on:
       dockerhub-password:
         description: 'DockerHub password'
         required: false
-
+      acr-username:
+        description: 'Azure username'
+        required: false
+      acr-password:
+        description: 'Azure password'
+        required: false
+      acr-registry-url:
+        description: 'Azure registry url'
+        required: false
+      aws-access-key-id:
+        description: 'Amazon Web Services access key id'
+        required: false
+      aws-secret-access-key:
+        description: 'Amazon Web Services secret access key'
+        required: false
+      aws-registry-url:
+        description: 'Amazon Web Services registry url'
+        required: false
+      gcloud-service-key:
+        description: 'Google Cloud service key'
+        required: false
+      docker-registry-username:
+        description: 'Custom docker registry username'
+        required: false
+      docker-registry-password:
+        description: 'Custom docker registry password'
+        required: false
+      docker-registry-url:
+        description: 'Custom docker registry url'
+        required: false
     outputs:
       url:
         description: "URL to Uffizzi Preview Environment"
@@ -150,6 +179,16 @@ jobs:
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
           dockerhub-password: ${{ secrets.dockerhub-password }}
+          acr-username: ${{ secrets.acr-username }}
+          acr-password: ${{ secrets.acr-password }}
+          acr-registry_url: ${{ secrets.acr-registry-url }}
+          aws-secret-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-registry_url: ${{ secrets.aws-registry-url }}
+          gcloud-service-key: ${{ secrets.gcloud-service-key }}
+          docker-registry-username: ${{ secrets.docker-registry-username }}
+          docker-registry-password: ${{ secrets.docker-registry-password }}
+          docker-registry-url: ${{ secrets.docker-registry-url }}
 
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
@@ -187,6 +226,17 @@ jobs:
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
           dockerhub-password: ${{ secrets.dockerhub-password }}
+          acr-username: ${{ secrets.acr-username }}
+          acr-password: ${{ secrets.acr-password }}
+          acr-registry-url: ${{ secrets.acr-registry-url }}
+          aws-secret-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-registry-url: ${{ secrets.aws-registry-url }}
+          gcloud-service-key: ${{ secrets.gcloud-service-key }}
+          docker-registry-username: ${{ secrets.docker-registry-username }}
+          docker-registry-password: ${{ secrets.docker-registry-password }}
+          docker-registry-url: ${{ secrets.docker-registry-url }}
+
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
         id: url-auth-for-update

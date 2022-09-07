@@ -49,6 +49,37 @@ inputs:
   dockerhub-password:
     descrption: 'DockerHub password'
     required: false
+  acr-username:
+    description: 'Azure username'
+    required: false
+  acr-password:
+    description: 'Azure password'
+    required: false
+  acr-registry-url:
+    description: 'Azure registry url'
+    required: false
+  aws-access-key-id:
+    description: 'Amazon Web Services access key id'
+    required: false
+  aws-secret-access-key:
+    description: 'Amazon Web Services secret access key'
+    required: false
+  aws-registry-url:
+    description: 'Amazon Web Services registry url'
+    required: false
+  gcloud-service-key:
+    description: 'Google Cloud service key'
+    required: false
+  docker-registry-username:
+    description: 'Custom docker registry username'
+    required: false
+  docker-registry-password:
+    description: 'Custom docker registry password'
+    required: false
+  docker-registry-url:
+    description: 'Custom docker registry url'
+    required: false
+  
 outputs:
   url:
     description: 'URL where preview was deployed, if successful'
@@ -76,3 +107,14 @@ runs:
     REQUEST_TOKEN_URL: ${{ inputs.request-token-url }}
     DOCKERHUB_USERNAME: ${{ inputs.dockerhub-username }}
     DOCKERHUB_PASSWORD: ${{ inputs.dockerhub-password}}
+    ACR_USERNAME: ${{ inputs.acr-username }}
+    ACR_PASSWORD: ${{ inputs.acr-password }}
+    ACR_REGISTRY_URL: ${{ inputs.acr-registry_url }}
+    AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+    AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+    AWS_REGISTRY_URL: ${{ inputs.aws-registry-url }}
+    GCLOUD_SERVICE_KEY: ${{ inputs.gcloud-service-key }}
+    DOCKER_REGISTRY_USERNAME: ${{ inputs.docker-registry-username }}
+    DOCKER_REGISTRY_PASSWORD: ${{ inputs.docker-registry-password }}
+    DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
+
