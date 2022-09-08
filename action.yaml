@@ -109,7 +109,7 @@ runs:
     DOCKERHUB_PASSWORD: ${{ inputs.dockerhub-password}}
     ACR_USERNAME: ${{ inputs.acr-username }}
     ACR_PASSWORD: ${{ inputs.acr-password }}
-    ACR_REGISTRY_URL: ${{ inputs.acr-registry_url }}
+    ACR_REGISTRY_URL: ${{ inputs.acr-registry-url }}
     AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
     AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
     AWS_REGISTRY_URL: ${{ inputs.aws-registry-url }}
