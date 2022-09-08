@@ -184,7 +184,7 @@ jobs:
           acr-registry_url: ${{ secrets.acr-registry-url }}
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
-          aws-registry_url: ${{ secrets.aws-registry-url }}
+          aws-registry-url: ${{ secrets.aws-registry-url }}
           gcloud-service-key: ${{ secrets.gcloud-service-key }}
           docker-registry-username: ${{ secrets.docker-registry-username }}
           docker-registry-password: ${{ secrets.docker-registry-password }}
