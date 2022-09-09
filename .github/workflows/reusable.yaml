@@ -181,7 +181,7 @@ jobs:
           dockerhub-password: ${{ secrets.dockerhub-password }}
           acr-username: ${{ secrets.acr-username }}
           acr-password: ${{ secrets.acr-password }}
-          acr-registry_url: ${{ secrets.acr-registry-url }}
+          acr-registry-url: ${{ secrets.acr-registry-url }}
           aws-access-key-id: ${{ secrets.aws-access-key-id }}
           aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
           aws-registry-url: ${{ secrets.aws-registry-url }}
