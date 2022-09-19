@@ -1,14 +1,17 @@
-# On-demand Environments-as-a-Service
+# On-demand Preview Environments
 
-Integrates as an event-driven step in your CI/CD pipeline to manage on-demand, ephemeral test environments for every feature branch.  Runs on [Uffizzi Platform](https://uffizzi.com) or your own open source [installation](https://github.com/UffizziCloud/uffizzi_app) on Kubernetes. 
+Uffizzi integrates as a step in your GitHub Actions pipeline to manage on-demand, ephemeral test environments for every feature branch/pull request. Preview Environments are deployed on [Uffizzi Cloud](https://uffizzi.com) (SaaS) or your own installation of [open-source Uffizzi](https://github.com/UffizziCloud/uffizzi_app) (self-hosting requires Kubernetes). 
 
-## Reusable Workflow
+## Reusable Workflow (recommended)
 
-We've published a [Reusable Workflow](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow) for your GitHub Actions. This can handle creating, updating, and deleting Uffizzi Previews. It will also publish preview URL's within comments on your Pull Requests. We recommend using this workflow instead of the individual actions.
+We've published a [Reusable Workflow](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow) for your GitHub Actions. This can handle creating, updating, and deleting Uffizzi Preview Environments. It will also publish preview environment URLs as a comment to your pull request issues.  
+
+💡 We recommend using this reusable workflow instead of using the individual actions for [create](https://github.com/UffizziCloud/preview-action), [update](https://github.com/UffizziCloud/update-preview-action), and [delete](https://github.com/UffizziCloud/delete-preview-action).   
+
 
 ### Workflow Calling Example
 
-This example builds and publishes an image on Docker Hub. It then renders a Uffizzi Docker Compose file from a template and caches it. It then calls the reusable workflow to create, update, or delete the Preview associated with this Pull Request.
+This example builds and publishes an image to Docker Hub for pull request events. It then renders a Docker Compose file from a template and caches it. Finally, it calls the reusable workflow to create, update, or delete the Preview Environment associated with the pull request.
 
 ```
 name: Build Images and Handle Uffizzi Previews.
@@ -22,7 +25,7 @@ jobs:
     name: Build and Push image
     runs-on: ubuntu-latest
     outputs:
-      # You'll need this output to later render the Compose file.
+      # You'll need this output later to render the Compose file.
       tags: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Login to DockerHub
@@ -78,11 +81,7 @@ jobs:
     with:
       compose-file-cache-key: ${{ needs.render-compose-file.outputs.compose-file-cache-key }}
       compose-file-cache-path: ${{ needs.render-compose-file.outputs.compose-file-cache-path }}
-      username: user@example.com
-      server: https://uffizzi.example.com/
-      project: default
-    secrets:
-      password: ${{ secrets.UFFIZZI_PASSWORD }}
+      server: https://app.uffizzi.com/
     permissions:
       contents: read
       pull-requests: write
@@ -92,105 +91,85 @@ jobs:
 
 #### `compose-file-cache-key`
 
-**Required** Key of hashed compose file, using [GitHub's `cache` action](https://github.com/marketplace/actions/cache)
+(Required) Key of hashed compose file, using [GitHub's `cache` action](https://github.com/marketplace/actions/cache)
 
 #### `compose-file-cache-path`
 
-**Required** Path of hashed compose file, using [GitHub's `cache` action](https://github.com/marketplace/actions/cache)
+(Required) Path of hashed compose file, using [GitHub's `cache` action](https://github.com/marketplace/actions/cache)
 
-#### `username`
+#### `server` 
 
-Uffizzi username
-
-#### `project`
-
-Uffizzi project name
-
-#### `server`
-
-URL of your Uffizzi installation
-
-### Workflow Secrets
-
-#### `password`
-
-Your Uffizzi password. Specify a GitHub Encrypted Secret and use it! See example above.
+(Required) `https://app.uffizzi.com/` or the URL of your Uffizzi installation  
 
 #### `url-username` and `url-password`
 
-If you're controlling access to your Environments' URL's, set the credentials here so the workflow can confirm successful deployment.
+(Optional) If you're controlling access to the URLs of your Preview Environments, set the credentials here so the workflow can confirm successful deployment.
 
-#### `personal-access-token`
+## Uffizzi Accounts
 
-Value of a [Github personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with access to the `read:packages` scope.
+If you're using the reusable workflow with [Uffizzi Cloud](https://uffizzi.com), an account and project will be created from your GitHub user and repository information when the workflow runs. If you're self-hosting open-source Uffizzi, you will need to create a Uffizzi user and project before running the workflow, then set `username`, `password`, and `project` inputs, where `project` is the Uffizzi project slug.  
 
-This option is provided as a convenience to get started quickly. For sensitive repositories, we recommend instead connecting your Uffizzi account to GHCR via the web interface or by executing `uffizzi connect ghcr` from a trusted environment.
+### Example usage Uffizzi Cloud
 
-# The Action Itself
+```yaml
+uses: UffizziCloud/preview-action@v2
+with:
+  compose-file: 'docker-compose.uffizzi.yaml'
+  server: 'https://app.uffizzi.com'
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+```
 
-If you wish to use this action by itself outside of the reusable workflow, you can. It will only create new previews, not update nor delete.
+### Example usage self-hosted
 
-## Inputs
+```yaml
+uses: UffizziCloud/preview-action@v2
+with:
+  compose-file: 'docker-compose.uffizzi.yaml'
+  server: 'https://uffizzi.example.com'
+  username: 'j.doe@example.com'
+  password: ${{ secrets.UFFIZZI_PASSWORD }}
+  project: 'default'
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+```
 
-### `compose-file`
+## Using this Preview Action itself (not recommended)
 
-**Required** Path to a compose file within your repository
+If you wish to use this action by itself outside of the reusable workflow described above, you can. It will only create new previews, not update nor delete them.
 
-### `username`
+### Inputs
 
-Uffizzi username
+#### `compose-file`
 
-### `project`
+(Required) Path to a compose file within your repository
 
-Uffizzi project slug
+#### `server`
 
-### `server`
+(Required) `https://app.uffizzi.com/` or the URL of your Uffizzi installation 
 
-URL of your Uffizzi installation
+#### `username`
 
-### `password`
+(Self-hosted only) Uffizzi username
 
-Your Uffizzi password. Specify a GitHub Encrypted Secret and use it! See example below.
+#### `password`
 
-### `ghcr-username` and `ghcr-access-token`
+(Self-hosted only) Your Uffizzi password, specified as a GitHub Secret
+
+#### `project`
+
+(Self-hosted only) Uffizzi project slug
+
+#### `ghcr-username` and `ghcr-access-token`
 
 Your GitHub username and the value of a [Github personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with access to the `read:packages` scope.
 
 This option is provided as a convenience to get started quickly. For sensitive repositories, we recommend instead connecting your Uffizzi account to GHCR via the web interface or by executing `uffizzi connect ghcr` from a trusted environment.
 
-### `dockerhub-username` and `dockerhub-password`
+#### `dockerhub-username` and `dockerhub-password`
 
 Your DockerHub username and password.
-
-## Example usage
-
-```yaml
-uses: UffizziCloud/preview-action@v2
-with:
-  compose-file: 'docker-compose.uffizzi.yaml'
-  username: 'admin@uffizzi.com'
-  server: 'https://app.uffizzi.com'
-  project: 'default'
-  password: ${{ secrets.UFFIZZI_PASSWORD }}
-permissions:
-  contents: read
-  pull-requests: write
-  id-token: write
-```
-
-## If you don't have a Uffizzi account
-
-If you don't have a Uffizzi account, leave the username, password and project inputs blank. Uffizzi will create a Uffizzi account based on the information about the current repository and Github user.
-
-Example usage without an account:
-
-```yaml
-uses: UffizziCloud/preview-action@v2
-with:
-  compose-file: 'docker-compose.uffizzi.yaml'
-  server: 'https://app.uffizzi.com'
-permissions:
-  contents: read
-  pull-requests: write
-  id-token: write
-```
