@@ -1,6 +1,6 @@
 # On-demand Preview Environments
 
-Uffizzi integrates as an event-driven step in your CI pipeline to manage on-demand, ephemeral test environments for every feature branch/pull request. Preview Environments are deployed on [Uffizzi Cloud](https://uffizzi.com) (SaaS) or your own installation of [open-source Uffizzi](https://github.com/UffizziCloud/uffizzi_app) (self-hosting requires Kubernetes). 
+Uffizzi integrates as a step in your GitHub Actions pipeline to manage on-demand, ephemeral test environments for every feature branch/pull request. Preview Environments are deployed on [Uffizzi Cloud](https://uffizzi.com) (SaaS) or your own installation of [open-source Uffizzi](https://github.com/UffizziCloud/uffizzi_app) (self-hosting requires Kubernetes). 
 
 ## Reusable Workflow (recommended)
 
