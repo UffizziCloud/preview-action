@@ -34,7 +34,7 @@ inputs:
   github-ref:
     description: 'Value of `github.ref` context'
     required: false
-  github-repository: 'Value of `github.repository` context'
+  github-repository:
     description: 'Value of `github.repository` context'
     required: false
   request-token:
