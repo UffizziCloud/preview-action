@@ -154,7 +154,7 @@ jobs:
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
-      - name: Create or update comment for deployment URL
+      - name: Create comment for deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
         with:
@@ -203,7 +203,7 @@ jobs:
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
-      - name: Create or update comment for deployment URL
+      - name: Update comment for deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         with:
