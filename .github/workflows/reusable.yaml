@@ -134,6 +134,9 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
+          github-event-number: ${{ github.event.number }}
+          github-ref: ${{ github.ref }}
+          github-repository: ${{ github.repository }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
@@ -184,6 +187,9 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
+          github-event-number: ${{ github.event.number }}
+          github-ref: ${{ github.ref }}
+          github-repository: ${{ github.repository }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
