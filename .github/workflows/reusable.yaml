@@ -63,8 +63,8 @@ jobs:
     name: "Create, Update, or Delete Preview on Uffizzi"
     runs-on: ubuntu-20.04
     outputs:
-      url: ${{ steps.preview.outputs.url }}
-      id: ${{ steps.preview.outputs.id }}
+      url: ${{ steps.outputs.outputs.url }}
+      id: ${{ steps.outputs.outputs.id }}
     steps:
       # If PR event, look for an existing Preview Deployment.
       - name: Find comment for deployment URL
@@ -139,9 +139,6 @@ jobs:
           dockerhub-username: ${{ secrets.dockerhub-username }}
           dockerhub-password: ${{ secrets.dockerhub-password }}
 
-      - name: Check outputs
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
-        run: echo "${{ steps.create-preview.outputs.id }} at ${{ steps.create-preview.outputs.url }}"
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
         id: url-auth-for-create
@@ -157,7 +154,7 @@ jobs:
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
-      - name: Create or update comment for deployment URL
+      - name: Create comment for deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
         with:
@@ -191,9 +188,6 @@ jobs:
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
           dockerhub-password: ${{ secrets.dockerhub-password }}
-      - name: Check outputs
-        if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
-        run: echo "${{ steps.update-preview.outputs.id }} at ${{ steps.update-preview.outputs.url }}"
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
         id: url-auth-for-update
@@ -209,7 +203,7 @@ jobs:
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
-      - name: Create or update comment for deployment URL
+      - name: Update comment for deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
         with:
@@ -222,3 +216,19 @@ jobs:
             Uffizzi Preview ID: `${{ steps.update-preview.outputs.id }}`
           edit-mode: replace
           reactions: '+1'
+      - name: Job output consolidation
+        id: outputs
+        if: ${{ github.event.action != 'closed' }}
+        run: |
+          export CREATE_URL=${{ steps.create-preview.outputs.url }}
+          export CREATE_ID=${{ steps.create-preview.outputs.id }}
+          export UPDATE_URL=${{ steps.update-preview.outputs.url }}
+          export UPDATE_ID=${{ steps.update-preview.outputs.id }}
+
+          export OUTPUT_URL=${CREATE_URL:-$UPDATE_URL}
+          export OUTPUT_ID=${CREATE_ID:-$UPDATE_ID}
+
+          echo "Deployment ID $OUTPUT_ID at $OUTPUT_URL"
+
+          echo "::set-output name=id::$OUTPUT_ID"
+          echo "::set-output name=url::$OUTPUT_URL"
