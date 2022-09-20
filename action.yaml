@@ -54,6 +54,7 @@ runs:
     - 'preview'
     - 'create'
     - '--output=github-action'
+    - '--set-labels="github.ref_name=${{ github.ref_name }} github.actor=${{ github.actor }} github.repository=${{ github.repository }} github.sha=${{ github.sha }} github.event.number=${{ github.event.number }}"'
     - ${{ inputs.compose-file }}
   env:
     UFFIZZI_PASSWORD: ${{ inputs.password }}
@@ -66,4 +67,3 @@ runs:
     REQUEST_TOKEN_URL: ${{ inputs.request-token-url }}
     DOCKERHUB_USERNAME: ${{ inputs.dockerhub-username }}
     DOCKERHUB_PASSWORD: ${{ inputs.dockerhub-password}}
-
