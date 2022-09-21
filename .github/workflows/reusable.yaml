@@ -89,7 +89,7 @@ jobs:
           UFFIZZI_SERVER: ${{ inputs.server }}
           UFFIZZI_USER: ${{ inputs.username }}
           UFFIZZI_PROJECT: ${{ inputs.project }}
-          REQUEST_TOKEN: ${{ steps.ci-job-token.outputs.request-token-url }}
+          REQUEST_TOKEN: ${{ steps.ci-job-token.outputs.request-token }}
           REQUEST_TOKEN_URL: ${{ steps.ci-job-token.outputs.request-token-url }}
       - name: DEBUG - Echo deployment ID
         run: 'echo ${{ steps.parse-comment.outputs.id }}'
