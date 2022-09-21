@@ -83,7 +83,7 @@ jobs:
         uses: docker://uffizzi/cli:v1
         with:
           entrypoint: bash
-          args: -c "docker-entrypoint.sh && echo ::set-output name=id::$(uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=${{ github.event.number }}\")"
+          args: -c "/root/docker-entrypoint.sh && echo ::set-output name=id::$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=${{ github.event.number }}\")"
         env:
           UFFIZZI_PASSWORD: ${{ secrets.password }}
           UFFIZZI_SERVER: ${{ inputs.server }}
