@@ -63,7 +63,7 @@ runs:
     - 'preview'
     - 'create'
     - '--output=github-action'
-    - '--set-labels="github.ref=${{ inputs.github-ref }} github.repository=${{ inputs.github-repository }} github.event.number=${{ inputs.github-event-number }}"'
+    - '--set-labels=github.ref=${{ inputs.github-ref }} github.repository=${{ inputs.github-repository }} github.event.number=${{ inputs.github-event-number }}'
     - ${{ inputs.compose-file }}
   env:
     UFFIZZI_PASSWORD: ${{ inputs.password }}
