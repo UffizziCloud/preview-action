@@ -81,9 +81,9 @@ jobs:
         id: find-deployment
         if: github.event_name == 'pull_request'
         uses: docker://uffizzi/cli:v1
-        run: |
-          docker-entrypoint.sh
-          echo ::set-output name=id::$(uffizzi preview list --filter "github.repository=${{ github.repository }} github.event.number=${{ github.event.number }}")
+        with:
+          entrypoint: bash
+          args: -c "docker-entrypoint.sh && echo ::set-output name=id::$(uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=${{ github.event.number }}\")"
         env:
           UFFIZZI_PASSWORD: ${{ secrets.password }}
           UFFIZZI_SERVER: ${{ inputs.server }}
