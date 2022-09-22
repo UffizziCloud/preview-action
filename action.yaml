@@ -1,5 +1,5 @@
 name: 'Preview Environments'
-description: 'Deploy a Uffizzi Preview Environment for every pull request'
+description: 'Preview Environments for every pull request. Supports APIs, frontends, backends, databases, and microservices.'
 author: 'Adam Vollrath'
 branding:
   color: 'yellow'
