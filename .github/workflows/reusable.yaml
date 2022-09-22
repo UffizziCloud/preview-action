@@ -102,6 +102,7 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: 'Uffizzi Preview ID:'
           direction: last
+
       - name: Delete Preview from Uffizzi
         if: ${{ github.event.action == 'closed' && steps.find-deployment.outputs.id != '' }}
         uses: UffizziCloud/delete-preview-action@v1
@@ -165,22 +166,6 @@ jobs:
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
-      - name: Create comment for deployment URL
-        uses: peter-evans/create-or-update-comment@v2
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Uffizzi Preview deployed at URL:
-            ${{ steps.create-preview.outputs.url }}
-
-            Uffizzi Preview deployment details at URI:
-            ${{ steps.create-preview.outputs.containers_uri }}
-
-            Uffizzi Preview ID: `${{ steps.create-preview.outputs.id }}`
-          edit-mode: replace
-          reactions: rocket
 
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
@@ -217,19 +202,6 @@ jobs:
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
-      - name: Update comment for deployment URL
-        uses: peter-evans/create-or-update-comment@v2
-        if: ${{ steps.find-deployment.outputs.id != '' && github.event.action != 'closed' }}
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Uffizzi Preview updated at URL:
-            ${{ steps.update-preview.outputs.url }}
-
-            Uffizzi Preview ID: `${{ steps.update-preview.outputs.id }}`
-          edit-mode: replace
-          reactions: '+1'
       - name: Job output consolidation
         id: outputs
         if: ${{ github.event.action != 'closed' }}
@@ -246,3 +218,16 @@ jobs:
 
           echo "::set-output name=id::$OUTPUT_ID"
           echo "::set-output name=url::$OUTPUT_URL"
+      - name: Create or Update Comment with Deployment URL
+        uses: peter-evans/create-or-update-comment@v2
+        if: ${{ github.event.action != 'closed' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Uffizzi Preview deployed at URL:
+            ${{ steps.outputs.outputs.url }}
+
+            Uffizzi Preview ID: `${{ steps.outputs.outputs.id }}`
+          edit-mode: replace
+          reactions: 'rocket'
