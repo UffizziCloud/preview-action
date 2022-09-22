@@ -104,7 +104,7 @@ jobs:
           direction: last
 
       - name: Delete Preview from Uffizzi
-        if: ${{ github.event.action == 'closed' && steps.find-deployment.outputs.id != '' }}
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
         uses: UffizziCloud/delete-preview-action@v1
         with:
           id: ${{ steps.find-deployment.outputs.id }}
@@ -114,7 +114,7 @@ jobs:
           password: ${{ secrets.password }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
-      - name: Update comment with deletion.
+      - name: Update Comment with Deletion
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
         with:
