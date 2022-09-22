@@ -72,7 +72,7 @@ jobs:
         with:
           debug: true
           script: |
-            const token = process.env['ACTIONS_RUNTIME_TOKEN']
+            const token = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN']
             const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
             core.setOutput('request-token', token.trim())
             core.setOutput('request-token-url', runtimeUrl.trim())
@@ -93,6 +93,15 @@ jobs:
           REQUEST_TOKEN_URL: ${{ steps.ci-job-token.outputs.request-token-url }}
       - name: DEBUG - Echo deployment ID
         run: 'echo ${{ steps.find-deployment.outputs.id }}'
+      - name: Find comment for deployment URL
+        uses: peter-evans/find-comment@v2
+        if: ${{ github.event_name == 'pull_request' && steps.find-deployment.outputs.id != '' }}
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'Uffizzi Preview ID:'
+          direction: last
       - name: Delete Preview from Uffizzi
         if: ${{ github.event.action == 'closed' && steps.find-deployment.outputs.id != '' }}
         uses: UffizziCloud/delete-preview-action@v1
