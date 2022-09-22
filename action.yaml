@@ -28,6 +28,15 @@ inputs:
   ghcr-access-token:
     description: 'Password to authenticate to GHCR'
     required: false
+  github-event-number:
+    description: 'Value of `github.event.number` context'
+    required: false
+  github-ref:
+    description: 'Value of `github.ref` context'
+    required: false
+  github-repository:
+    description: 'Value of `github.repository` context'
+    required: false
   request-token:
     descrption: 'A token to access the pipeline information'
     required: false
@@ -54,6 +63,7 @@ runs:
     - 'preview'
     - 'create'
     - '--output=github-action'
+    - '--set-labels=github.ref=${{ inputs.github-ref }} github.repository=${{ inputs.github-repository }} github.event.number=${{ inputs.github-event-number }}'
     - ${{ inputs.compose-file }}
   env:
     UFFIZZI_PASSWORD: ${{ inputs.password }}
@@ -66,4 +76,3 @@ runs:
     REQUEST_TOKEN_URL: ${{ inputs.request-token-url }}
     DOCKERHUB_USERNAME: ${{ inputs.dockerhub-username }}
     DOCKERHUB_PASSWORD: ${{ inputs.dockerhub-password}}
-

@@ -66,53 +66,62 @@ jobs:
       url: ${{ steps.outputs.outputs.url }}
       id: ${{ steps.outputs.outputs.id }}
     steps:
-      # If PR event, look for an existing Preview Deployment.
-      - name: Find comment for deployment URL
-        uses: peter-evans/find-comment@v2
-        if: github.event_name == 'pull_request'
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: 'Uffizzi Preview ID:'
-          direction: last
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
         id: ci-job-token
         with:
           debug: true
           script: |
-            const token = process.env['ACTIONS_RUNTIME_TOKEN']
+            const token = process.env['ACTIONS_ID_TOKEN_REQUEST_TOKEN']
             const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
             core.setOutput('request-token', token.trim())
             core.setOutput('request-token-url', runtimeUrl.trim())
-      - name: Parse Comment for Preview Deployment ID
-        id: parse-comment
-        if: ${{ steps.find-comment.outputs.comment-id != '' }}
-        # voodoo
-        run: 'echo ''${{ steps.find-comment.outputs.comment-body }}'' | sed -n "s/Uffizzi Preview ID: \`\(\S*\)\`/::set-output name=id::\1/p"'
+      # If PR event, look for an existing Preview Deployment.
+      - name: Find Deployment for this Pull Request
+        id: find-deployment
+        if: github.event_name == 'pull_request'
+        uses: docker://uffizzi/cli:v1
+        with:
+          entrypoint: bash
+          args: -c "/root/docker-entrypoint.sh && echo ::set-output name=id::$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=${{ github.event.number }}\")"
+        env:
+          UFFIZZI_PASSWORD: ${{ secrets.password }}
+          UFFIZZI_SERVER: ${{ inputs.server }}
+          UFFIZZI_USER: ${{ inputs.username }}
+          UFFIZZI_PROJECT: ${{ inputs.project }}
+          REQUEST_TOKEN: ${{ steps.ci-job-token.outputs.request-token }}
+          REQUEST_TOKEN_URL: ${{ steps.ci-job-token.outputs.request-token-url }}
       - name: DEBUG - Echo deployment ID
-        run: 'echo ${{ steps.parse-comment.outputs.id }}'
+        run: 'echo ${{ steps.find-deployment.outputs.id }}'
+      - name: Find comment for deployment URL
+        uses: peter-evans/find-comment@v2
+        if: ${{ github.event_name == 'pull_request' && steps.find-deployment.outputs.id != '' }}
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: 'Uffizzi Preview ID:'
+          direction: last
 
       - name: Delete Preview from Uffizzi
-        if: ${{ github.event.action == 'closed' && steps.parse-comment.outputs.id != '' }}
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
         uses: UffizziCloud/delete-preview-action@v1
         with:
-          id: ${{ steps.parse-comment.outputs.id }}
+          id: ${{ steps.find-deployment.outputs.id }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
-      - name: Update comment with deletion.
+      - name: Update Comment with Deletion
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            Uffizzi Preview `${{ steps.parse-comment.outputs.id }}` was deleted.
+            Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
           edit-mode: replace
 
       - name: Fetch cached Compose File
@@ -124,8 +133,8 @@ jobs:
           key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy New Preview
         id: create-preview
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
-        uses: UffizziCloud/preview-action@v2
+        if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' }}
+        uses: UffizziCloud/preview-action@labels
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
@@ -134,6 +143,9 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
+          github-event-number: ${{ github.event.number }}
+          github-ref: ${{ github.ref }}
+          github-repository: ${{ github.repository }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
@@ -145,38 +157,22 @@ jobs:
         shell: bash
         run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == '' }}
+        if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == 'true' }}
+        if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
-      - name: Create comment for deployment URL
-        uses: peter-evans/create-or-update-comment@v2
-        if: ${{ steps.find-comment.outputs.comment-id == '' && github.event.action != 'closed' }}
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Uffizzi Preview deployed at URL:
-            ${{ steps.create-preview.outputs.url }}
-
-            Uffizzi Preview deployment details at URI:
-            ${{ steps.create-preview.outputs.containers_uri }}
-
-            Uffizzi Preview ID: `${{ steps.create-preview.outputs.id }}`
-          edit-mode: replace
-          reactions: rocket
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@v1
+        uses: UffizziCloud/update-preview-action@labels
         id: update-preview
-        if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
+        if: ${{ steps.find-deployment.outputs.id != '' && github.event.action != 'closed' }}
         with:
-          preview-id: ${{ steps.parse-comment.outputs.id }}
+          preview-id: ${{ steps.find-deployment.outputs.id }}
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
@@ -184,6 +180,9 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
+          github-event-number: ${{ github.event.number }}
+          github-ref: ${{ github.ref }}
+          github-repository: ${{ github.repository }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
           dockerhub-username: ${{ secrets.dockerhub-username }}
@@ -194,28 +193,15 @@ jobs:
         shell: bash
         run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' && steps.url-auth-for-update.outputs.enabled == '' }}
+        if: ${{ steps.find-deployment.outputs.id != '' && github.event.action != 'closed' && steps.url-auth-for-update.outputs.enabled == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' && steps.url-auth-for-update.outputs.enabled == 'true' }}
+        if: ${{ steps.find-deployment.outputs.id != '' && github.event.action != 'closed' && steps.url-auth-for-update.outputs.enabled == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
-      - name: Update comment for deployment URL
-        uses: peter-evans/create-or-update-comment@v2
-        if: ${{ steps.parse-comment.outputs.id != '' && github.event.action != 'closed' }}
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            Uffizzi Preview updated at URL:
-            ${{ steps.update-preview.outputs.url }}
-
-            Uffizzi Preview ID: `${{ steps.update-preview.outputs.id }}`
-          edit-mode: replace
-          reactions: '+1'
       - name: Job output consolidation
         id: outputs
         if: ${{ github.event.action != 'closed' }}
@@ -232,3 +218,16 @@ jobs:
 
           echo "::set-output name=id::$OUTPUT_ID"
           echo "::set-output name=url::$OUTPUT_URL"
+      - name: Create or Update Comment with Deployment URL
+        uses: peter-evans/create-or-update-comment@v2
+        if: ${{ github.event.action != 'closed' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            Uffizzi Preview deployed at URL:
+            ${{ steps.outputs.outputs.url }}
+
+            Uffizzi Preview ID: `${{ steps.outputs.outputs.id }}`
+          edit-mode: replace
+          reactions: 'rocket'
