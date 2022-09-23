@@ -87,6 +87,19 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      
+  delete-uffizzi-preview:
+    name: Use Remote Workflow to Delete an Existing Preview
+    uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2
+    if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+    with:
+      compose-file-cache-key: ''
+      compose-file-cache-path: docker-compose.rendered.yml
+      server: https://app.uffizzi.com/
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
 ```
 
 ### Workflow Inputs
