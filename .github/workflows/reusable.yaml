@@ -208,16 +208,20 @@ jobs:
         run: |
           export CREATE_URL=${{ steps.create-preview.outputs.url }}
           export CREATE_ID=${{ steps.create-preview.outputs.id }}
+          export CREATE_CONTAINERS=${{ steps.create-preview.outputs.containers_uri }}
           export UPDATE_URL=${{ steps.update-preview.outputs.url }}
           export UPDATE_ID=${{ steps.update-preview.outputs.id }}
+          export UPDATE_CONTAINERS=${{ steps.update-preview.outputs.containers_uri }}
 
           export OUTPUT_URL=${CREATE_URL:-$UPDATE_URL}
           export OUTPUT_ID=${CREATE_ID:-$UPDATE_ID}
+          export OUTPUT_CONTAINERS=${CREATE_CONTAINERS:-$UPDATE_CONTAINERS}
 
           echo "Deployment ID $OUTPUT_ID at $OUTPUT_URL"
 
           echo "::set-output name=id::$OUTPUT_ID"
           echo "::set-output name=url::$OUTPUT_URL"
+          echo "::set-output name=containers_uri::$OUTPUT_CONTAINERS"
       - name: Create or Update Comment with Deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event.action != 'closed' }}
@@ -227,6 +231,9 @@ jobs:
           body: |
             Uffizzi Preview deployed at URL:
             ${{ steps.outputs.outputs.url }}
+
+            Uffizzi Preview deployment details at URI:
+            ${{ steps.outputs.outputs.containers_uri }}
 
             Uffizzi Preview ID: `${{ steps.outputs.outputs.id }}`
           edit-mode: replace
