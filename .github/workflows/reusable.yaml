@@ -242,7 +242,7 @@ jobs:
             echo "Expiring in $EXPIRATION_INTERVAL seconds at $EXPIRATION."
 
             echo "::set-output name=expiration_interval::$EXPIRATION_INTERVAL"
-            echo "::set-output name=expiration::This Preview will be destroyed at: $EXPIRATION"
+            echo "::set-output name=expiration::This Preview will be destroyed in $EXPIRATION_HOURS hours at: $EXPIRATION"
           fi
 
       - name: Create or Update Comment with Deployment URL
