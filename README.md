@@ -188,3 +188,53 @@ This option is provided as a convenience to get started quickly. For sensitive r
 #### `dockerhub-username` and `dockerhub-password`
 
 Your DockerHub username and password.
+
+### `acr-registry-url`, `acr-username`, and `acr-password`
+
+Your Azure Container Registry url, username and password.
+
+### `aws-registry-url`, `aws-access-key-id`, and `aws-secret-access-key`
+
+Your Amazon Web Services registry url, access key id and secret access key.
+
+### `gcloud-service-key`
+
+Your Google Cloud service key.
+
+### `docker-registry-url`, `docker-registry-username`, and `docker-registry-password`
+
+Your custom docker registry url, username and password.
+
+
+## Example usage
+
+```yaml
+uses: UffizziCloud/preview-action@v2
+with:
+  compose-file: 'docker-compose.uffizzi.yaml'
+  username: 'admin@uffizzi.com'
+  server: 'https://app.uffizzi.com'
+  project: 'default'
+  password: ${{ secrets.UFFIZZI_PASSWORD }}
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+```
+
+## If you don't have a Uffizzi account
+
+If you don't have a Uffizzi account, leave the username, password and project inputs blank. Uffizzi will create a Uffizzi account based on the information about the current repository and Github user.
+
+Example usage without an account:
+
+```yaml
+uses: UffizziCloud/preview-action@v2
+with:
+  compose-file: 'docker-compose.uffizzi.yaml'
+  server: 'https://app.uffizzi.com'
+permissions:
+  contents: read
+  pull-requests: write
+  id-token: write
+```
