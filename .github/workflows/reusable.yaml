@@ -207,7 +207,7 @@ jobs:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@feature/#6_add_credentials_input
+        uses: UffizziCloud/update-preview-action@v1
         id: update-preview
         if: ${{ steps.find-deployment.outputs.id != '' && github.event.action != 'closed' }}
         with:
