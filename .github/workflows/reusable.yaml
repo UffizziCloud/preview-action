@@ -52,6 +52,12 @@ on:
       id:
         description: "Uffizzi Preview Deployment ID"
         value: ${{ jobs.uffizzi-preview.outputs.id }}
+      expiration_interval:
+        description: "Uffizzi Preview Expiration Interval in Seconds"
+        value: ${{ jobs.uffizzi-preview.outputs.expiration_interval }}
+      expiration:
+        description: "Uffizzi Preview Expiration Timestamp String"
+        value: ${{ jobs.uffizzi-preview.outputs.expiration }}
 
 permissions:
   contents: read
@@ -65,6 +71,8 @@ jobs:
     outputs:
       url: ${{ steps.outputs.outputs.url }}
       id: ${{ steps.outputs.outputs.id }}
+      expiration_interval: ${{ steps.outputs.outputs.expiration_interval }}
+      expiration: ${{ steps.outputs.outputs.expiration }}
     steps:
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
@@ -222,6 +230,21 @@ jobs:
           echo "::set-output name=id::$OUTPUT_ID"
           echo "::set-output name=url::$OUTPUT_URL"
           echo "::set-output name=containers_uri::$OUTPUT_CONTAINERS"
+
+          export EXPIRATION_HOURS=$(grep --perl-regexp --only-matching 'delete_preview_after: \K\d+' ${{ inputs.compose-file-cache-path }})
+          if [ -z EXPIRATION_HOURS ]
+          then
+            echo "No preview expiration parameter found."
+          else
+            export EXPIRATION_INTERVAL=$(( $EXPIRATION_HOURS * 3600 ))
+            export EXPIRATION=$(date --utc --date=@$(($(date +'%s') + $EXPIRATION_INTERVAL)))
+
+            echo "Expiring in $EXPIRATION_INTERVAL seconds at $EXPIRATION."
+
+            echo "::set-output name=expiration_interval::$EXPIRATION_INTERVAL"
+            echo "::set-output name=expiration::This Preview will be destroyed at: $EXPIRATION"
+          fi
+
       - name: Create or Update Comment with Deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ github.event.action != 'closed' }}
@@ -236,5 +259,7 @@ jobs:
             ${{ steps.outputs.outputs.containers_uri }}
 
             Uffizzi Preview ID: `${{ steps.outputs.outputs.id }}`
+
+            ${{ steps.outputs.outputs.expiration }}
           edit-mode: replace
           reactions: 'rocket'
