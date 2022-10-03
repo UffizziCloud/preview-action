@@ -25,6 +25,11 @@ on:
         default: default
         required: false
         type: string
+      pr-number:
+        description: "GitHub Pull Request Number"
+        default: ''
+        required: false
+        type: string
     secrets:
       password:
         description: "Uffizzi password for login"
@@ -105,6 +110,13 @@ jobs:
     steps:
       - name: DEBUG - Dump GitHub context and environment info
         uses: crazy-max/ghaction-dump-context@v1
+      - name: Determine Pull Request Number
+        id: pr
+        run: |
+          export INPUT_PR=${{ inputs.pr-number }}
+          export CONTEXT_PR=${{ github.event.number }}
+          export OUTPUT_PR=${INPUT_PR:-CONTEXT_PR}
+          echo "::set-output name=number::$OUTPUT_PR"
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
         id: ci-job-token
@@ -118,11 +130,11 @@ jobs:
       # If PR event, look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
-        if: github.event_name == 'pull_request'
+        #if: github.event_name == 'pull_request'
         uses: docker://uffizzi/cli:v1
         with:
           entrypoint: bash
-          args: -c "/root/docker-entrypoint.sh && echo ::set-output name=id::$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=${{ github.event.number }}\")"
+          args: -c "/root/docker-entrypoint.sh && echo ::set-output name=id::$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=${{ steps.pr.outputs.number }}\")"
         env:
           UFFIZZI_PASSWORD: ${{ secrets.password }}
           UFFIZZI_SERVER: ${{ inputs.server }}
@@ -134,16 +146,16 @@ jobs:
         run: 'echo ${{ steps.find-deployment.outputs.id }}'
       - name: Find comment for deployment URL
         uses: peter-evans/find-comment@v2
-        if: ${{ github.event_name == 'pull_request' && steps.find-deployment.outputs.id != '' }}
+        #if: ${{ github.event_name == 'pull_request' && steps.find-deployment.outputs.id != '' }}
         id: find-comment
         with:
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ steps.pr.outputs.number }}
           comment-author: 'github-actions[bot]'
           body-includes: 'Uffizzi Preview ID:'
           direction: last
 
       - name: Delete Preview from Uffizzi
-        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+        # if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
         uses: UffizziCloud/delete-preview-action@v1
         with:
           id: ${{ steps.find-deployment.outputs.id }}
@@ -155,17 +167,17 @@ jobs:
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
       - name: Update Comment with Deletion
         uses: peter-evans/create-or-update-comment@v2
-        if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+        # if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ steps.pr.output.number }}
           body: |
             Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
           edit-mode: replace
 
       - name: Fetch cached Compose File
         id: cache
-        if: ${{ github.event.action != 'closed' }}
+        # if: ${{ github.event.action != 'closed' }}
         uses: actions/cache@v3
         with:
           path: ${{ inputs.compose-file-cache-path }}
@@ -182,7 +194,7 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
-          github-event-number: ${{ github.event.number }}
+          github-event-number: ${{ steps.pr.outputs.number }}
           github-ref: ${{ github.ref }}
           github-repository: ${{ github.repository }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
@@ -229,7 +241,7 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
-          github-event-number: ${{ github.event.number }}
+          github-event-number: ${{ steps.pr.outputs.number }}
           github-ref: ${{ github.ref }}
           github-repository: ${{ github.repository }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
@@ -302,7 +314,7 @@ jobs:
         if: ${{ github.event.action != 'closed' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
+          issue-number: ${{ steps.pr.outputs.number }}
           body: |
             Uffizzi Preview deployed at URL:
             ${{ steps.outputs.outputs.url }}
