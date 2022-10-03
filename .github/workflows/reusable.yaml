@@ -154,26 +154,26 @@ jobs:
           body-includes: 'Uffizzi Preview ID:'
           direction: last
 
-      - name: Delete Preview from Uffizzi
-        # if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
-        uses: UffizziCloud/delete-preview-action@v1
-        with:
-          id: ${{ steps.find-deployment.outputs.id }}
-          username: ${{ inputs.username }}
-          server: ${{ inputs.server }}
-          project: ${{ inputs.project }}
-          password: ${{ secrets.password }}
-          request-token: ${{ steps.ci-job-token.outputs.request-token }}
-          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
-      - name: Update Comment with Deletion
-        uses: peter-evans/create-or-update-comment@v2
-        # if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ steps.pr.output.number }}
-          body: |
-            Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
-          edit-mode: replace
+#      - name: Delete Preview from Uffizzi
+#        # if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+#        uses: UffizziCloud/delete-preview-action@v1
+#        with:
+#          id: ${{ steps.find-deployment.outputs.id }}
+#          username: ${{ inputs.username }}
+#          server: ${{ inputs.server }}
+#          project: ${{ inputs.project }}
+#          password: ${{ secrets.password }}
+#          request-token: ${{ steps.ci-job-token.outputs.request-token }}
+#          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
+#      - name: Update Comment with Deletion
+#        uses: peter-evans/create-or-update-comment@v2
+#        # if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
+#        with:
+#          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+#          issue-number: ${{ steps.pr.output.number }}
+#          body: |
+#            Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
+#          edit-mode: replace
 
       - name: Fetch cached Compose File
         id: cache
