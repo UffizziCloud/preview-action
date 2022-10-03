@@ -282,7 +282,7 @@ jobs:
           echo "::set-output name=containers_uri::$OUTPUT_CONTAINERS"
 
           export EXPIRATION_HOURS=$(grep --perl-regexp --only-matching 'delete_preview_after: \K\d+' ${{ inputs.compose-file-cache-path }})
-          if [ -z EXPIRATION_HOURS ]
+          if [ -z "$EXPIRATION_HOURS" ]
           then
             echo "No preview expiration parameter found."
           else
