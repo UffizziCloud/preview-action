@@ -103,6 +103,8 @@ jobs:
       expiration_interval: ${{ steps.outputs.outputs.expiration_interval }}
       expiration: ${{ steps.outputs.outputs.expiration }}
     steps:
+      - name: DEBUG - Dump GitHub context and environment info
+        uses: crazy-max/ghaction-dump-context@v1
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
         id: ci-job-token
