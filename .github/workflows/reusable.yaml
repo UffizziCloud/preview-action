@@ -108,8 +108,8 @@ jobs:
       expiration_interval: ${{ steps.outputs.outputs.expiration_interval }}
       expiration: ${{ steps.outputs.outputs.expiration }}
     steps:
-      - name: DEBUG - Dump GitHub context and environment info
-        uses: crazy-max/ghaction-dump-context@v1
+#      - name: DEBUG - Dump GitHub context and environment info
+#        uses: crazy-max/ghaction-dump-context@v1
       - name: Determine Pull Request Number
         id: pr
         run: |
@@ -130,7 +130,6 @@ jobs:
       # If PR event, look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
-        #if: github.event_name == 'pull_request'
         uses: docker://uffizzi/cli:v1
         with:
           entrypoint: bash
@@ -146,7 +145,6 @@ jobs:
         run: 'echo ${{ steps.find-deployment.outputs.id }}'
       - name: Find comment for deployment URL
         uses: peter-evans/find-comment@v2
-        #if: ${{ github.event_name == 'pull_request' && steps.find-deployment.outputs.id != '' }}
         id: find-comment
         with:
           issue-number: ${{ steps.pr.outputs.number }}
@@ -154,37 +152,37 @@ jobs:
           body-includes: 'Uffizzi Preview ID:'
           direction: last
 
-#      - name: Delete Preview from Uffizzi
-#        # if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
-#        uses: UffizziCloud/delete-preview-action@v1
-#        with:
-#          id: ${{ steps.find-deployment.outputs.id }}
-#          username: ${{ inputs.username }}
-#          server: ${{ inputs.server }}
-#          project: ${{ inputs.project }}
-#          password: ${{ secrets.password }}
-#          request-token: ${{ steps.ci-job-token.outputs.request-token }}
-#          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
-#      - name: Update Comment with Deletion
-#        uses: peter-evans/create-or-update-comment@v2
-#        # if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
-#        with:
-#          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-#          issue-number: ${{ steps.pr.output.number }}
-#          body: |
-#            Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
-#          edit-mode: replace
+      - name: Delete Preview from Uffizzi
+        if: ${{ inputs.compose-file-cache-key == '' }}
+        uses: UffizziCloud/delete-preview-action@v1
+        with:
+          id: ${{ steps.find-deployment.outputs.id }}
+          username: ${{ inputs.username }}
+          server: ${{ inputs.server }}
+          project: ${{ inputs.project }}
+          password: ${{ secrets.password }}
+          request-token: ${{ steps.ci-job-token.outputs.request-token }}
+          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
+      - name: Update Comment with Deletion
+        uses: peter-evans/create-or-update-comment@v2
+        if: ${{ inputs.compose-file-cache-key == '' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ steps.pr.output.number }}
+          body: |
+            Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
+          edit-mode: replace
 
       - name: Fetch cached Compose File
         id: cache
-        # if: ${{ github.event.action != 'closed' }}
+        if: ${{ inputs.compose-file-cache-key != '' }}
         uses: actions/cache@v3
         with:
           path: ${{ inputs.compose-file-cache-path }}
           key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy New Preview
         id: create-preview
-        if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' }}
+        if: ${{ steps.find-deployment.outputs.id == '' && inputs.compose-file-cache-key != '' }}
         uses: UffizziCloud/preview-action@v2
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
@@ -231,7 +229,7 @@ jobs:
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
         id: update-preview
-        if: ${{ steps.find-deployment.outputs.id != '' && github.event.action != 'closed' }}
+        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' }}
         with:
           preview-id: ${{ steps.find-deployment.outputs.id }}
           compose-file: ${{ inputs.compose-file-cache-path }}
@@ -265,12 +263,12 @@ jobs:
         shell: bash
         run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-deployment.outputs.id != '' && github.event.action != 'closed' && steps.url-auth-for-update.outputs.enabled == '' }}
+        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' && steps.url-auth-for-update.outputs.enabled == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-deployment.outputs.id != '' && github.event.action != 'closed' && steps.url-auth-for-update.outputs.enabled == 'true' }}
+        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' && steps.url-auth-for-update.outputs.enabled == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
@@ -311,7 +309,7 @@ jobs:
 
       - name: Create or Update Comment with Deployment URL
         uses: peter-evans/create-or-update-comment@v2
-        if: ${{ github.event.action != 'closed' }}
+        if: ${{ inputs.compose-file-cache-key != '' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ steps.pr.outputs.number }}
