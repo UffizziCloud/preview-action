@@ -2,20 +2,19 @@
 
 Deploy a Preview Environment for every pull request. Supports APIs, frontends, backends, databases, and microservices.  
 
-Uffizzi integrates as a step in your GitHub Actions pipeline to manage on-demand, ephemeral test environments for every feature branch/pull request. Preview Environments are deployed on [Uffizzi Cloud](https://uffizzi.com) (SaaS) or your own installation of [open-source Uffizzi](https://github.com/UffizziCloud/uffizzi_app) (self-hosting requires Kubernetes). 
+Uffizzi integrates as a step in your GitHub Actions pipeline to manage on-demand, ephemeral test environments for every feature branch/pull request. Preview Environments are deployed on [Uffizzi Cloud](https://uffizzi.com) (SaaS) or your own installation of [open-source Uffizzi](https://github.com/UffizziCloud/uffizzi_app) (self-hosting requires Kubernetes).
 
 ## Reusable Workflow (recommended)
 
 We've published a [Reusable Workflow](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow) for your GitHub Actions. This can handle creating, updating, and deleting Uffizzi Preview Environments. It will also publish Preview Environment URLs as a comment to your pull request issues.  
 
-💡 We recommend using this reusable workflow instead of using the individual actions for [create](https://github.com/UffizziCloud/preview-action), [update](https://github.com/UffizziCloud/update-preview-action), and [delete](https://github.com/UffizziCloud/delete-preview-action).   
-
+💡 We recommend using this reusable workflow instead of using the individual actions for [create](https://github.com/UffizziCloud/preview-action), [update](https://github.com/UffizziCloud/update-preview-action), and [delete](https://github.com/UffizziCloud/delete-preview-action).
 
 ### Workflow Calling Example
 
 This example builds and publishes an image to Docker Hub for pull request events. It then renders a Docker Compose file from a template and caches it. Finally, it calls the reusable workflow to create, update, or delete the Preview Environment associated with the pull request.
 
-```
+```yaml
 name: Build Images and Handle Uffizzi Previews.
 
 on:
@@ -108,13 +107,19 @@ jobs:
 
 (Required) Key of hashed compose file, using [GitHub's `cache` action](https://github.com/marketplace/actions/cache)
 
+Note that if this is an emtpy string, the reusable workflow will delete the preview associated with this Pull Request.
+
 #### `compose-file-cache-path`
 
 (Required) Path of hashed compose file, using [GitHub's `cache` action](https://github.com/marketplace/actions/cache)
 
-#### `server` 
+#### `server`
 
-(Required) `https://app.uffizzi.com/` or the URL of your Uffizzi installation  
+(Required) `https://app.uffizzi.com/` or the URL of your Uffizzi installation
+
+#### `pr-number`
+
+(Optional) If you're calling this workflow from a workflow that's not triggered by `pull_request`, you may want to specify the PR number here.
 
 #### `url-username` and `url-password`
 
@@ -204,7 +209,6 @@ Your Google Cloud service key.
 ### `docker-registry-url`, `docker-registry-username`, and `docker-registry-password`
 
 Your custom docker registry url, username and password.
-
 
 ## Example usage
 
