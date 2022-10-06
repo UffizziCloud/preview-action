@@ -115,7 +115,7 @@ jobs:
         run: |
           export INPUT_PR=${{ inputs.pr-number }}
           export CONTEXT_PR=${{ github.event.number }}
-          export OUTPUT_PR=${INPUT_PR:-CONTEXT_PR}
+          export OUTPUT_PR=${INPUT_PR:-$CONTEXT_PR}
           echo "::set-output name=number::$OUTPUT_PR"
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
