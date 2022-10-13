@@ -108,8 +108,9 @@ jobs:
       expiration_interval: ${{ steps.outputs.outputs.expiration_interval }}
       expiration: ${{ steps.outputs.outputs.expiration }}
     steps:
-#      - name: DEBUG - Dump GitHub context and environment info
-#        uses: crazy-max/ghaction-dump-context@v1
+      - name: DEBUG - Dump GitHub context and environment info
+        if: ${{ runner.debug }}
+        uses: crazy-max/ghaction-dump-context@v1
       - name: Determine Pull Request Number
         id: pr
         run: |
@@ -180,6 +181,9 @@ jobs:
         with:
           path: ${{ inputs.compose-file-cache-path }}
           key: ${{ inputs.compose-file-cache-key }}
+      - name: Checkout commit
+        if: ${{ inputs.compose-file-cache-key != '' }}
+        uses: actions/checkout@v3
       - name: Deploy New Preview
         id: create-preview
         if: ${{ steps.find-deployment.outputs.id == '' && inputs.compose-file-cache-key != '' }}
