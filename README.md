@@ -79,6 +79,7 @@ jobs:
     name: Use Remote Workflow to Preview on Uffizzi
     needs: render-compose-file
     uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
     with:
       compose-file-cache-key: ${{ needs.render-compose-file.outputs.compose-file-cache-key }}
       compose-file-cache-path: ${{ needs.render-compose-file.outputs.compose-file-cache-path }}
@@ -86,6 +87,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+      id-token: write
       
   delete-uffizzi-preview:
     name: Use Remote Workflow to Delete an Existing Preview
