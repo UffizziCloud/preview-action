@@ -174,6 +174,9 @@ jobs:
             Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
           edit-mode: replace
 
+      - name: Checkout commit
+        if: ${{ inputs.compose-file-cache-key != '' }}
+        uses: actions/checkout@v3
       - name: Fetch cached Compose File
         id: cache
         if: ${{ inputs.compose-file-cache-key != '' }}
@@ -181,9 +184,6 @@ jobs:
         with:
           path: ${{ inputs.compose-file-cache-path }}
           key: ${{ inputs.compose-file-cache-key }}
-      - name: Checkout commit
-        if: ${{ inputs.compose-file-cache-key != '' }}
-        uses: actions/checkout@v3
       - name: Deploy New Preview
         id: create-preview
         if: ${{ steps.find-deployment.outputs.id == '' && inputs.compose-file-cache-key != '' }}
