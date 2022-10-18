@@ -89,7 +89,7 @@ outputs:
     description: 'URI to the deployment details'
 runs:
   using: 'docker'
-  image: 'docker://uffizzi/cli:pr-168'
+  image: 'docker://uffizzi/cli:v1'
   args:
     - 'preview'
     - 'create'
