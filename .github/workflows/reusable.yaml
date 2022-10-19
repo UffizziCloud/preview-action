@@ -120,7 +120,7 @@ jobs:
           echo "::set-output name=number::$OUTPUT_PR"
       - name: Predict Deployment URL
         id: url
-        run: echo "EXPECTED_URL=https://app.uffizzi.com/github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }} >> $GITHUB_ENV"
+        run: echo "EXPECTED_URL=https://app.uffizzi.com/github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }}" >> $GITHUB_ENV
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
         id: ci-job-token
@@ -185,13 +185,14 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ steps.pr.outputs.number }}
           body: |
-            ## Uffizzi Preview Environment `${{ steps.outputs.outputs.id }}`
+            ## Uffizzi Preview Environment
 
             :cloud: ${{ env.EXPECTED_URL }}
 
             :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+            What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace
-          reactions: 'rocket'
 
       - name: Checkout commit
         if: ${{ inputs.compose-file-cache-key != '' }}
@@ -344,5 +345,6 @@ jobs:
             :page_facing_up: [View Application Logs etc.](${{ steps.outputs.outputs.containers_uri }})
 
             :alarm_clock: ${{ steps.outputs.outputs.expiration }}
+
+            What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace
-          reactions: 'rocket'
