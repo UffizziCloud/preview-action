@@ -118,6 +118,9 @@ jobs:
           export CONTEXT_PR=${{ github.event.number }}
           export OUTPUT_PR=${INPUT_PR:-$CONTEXT_PR}
           echo "::set-output name=number::$OUTPUT_PR"
+      - name: Predict Deployment URL
+        id: url
+        run: echo "EXPECTED_URL=https://app.uffizzi.com/github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }} >> $GITHUB_ENV"
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
         id: ci-job-token
@@ -150,7 +153,7 @@ jobs:
         with:
           issue-number: ${{ steps.pr.outputs.number }}
           comment-author: 'github-actions[bot]'
-          body-includes: 'Uffizzi Preview ID:'
+          body-includes: '${{ env.EXPECTED_URL }}'
           direction: last
 
       - name: Delete Preview from Uffizzi
@@ -173,6 +176,22 @@ jobs:
           body: |
             Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
           edit-mode: replace
+
+      - name: Create or Update Comment with Deployment Notification
+        id: notification
+        uses: peter-evans/create-or-update-comment@v2
+        if: ${{ inputs.compose-file-cache-key != '' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ steps.pr.outputs.number }}
+          body: |
+            ## Uffizzi Preview Environment `${{ steps.outputs.outputs.id }}`
+
+            :cloud: ${{ env.EXPECTED_URL }}
+
+            :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+          edit-mode: replace
+          reactions: 'rocket'
 
       - name: Checkout commit
         if: ${{ inputs.compose-file-cache-key != '' }}
@@ -315,17 +334,15 @@ jobs:
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ inputs.compose-file-cache-key != '' }}
         with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          comment-id: ${{ steps.notification.outputs.comment-id }}
           issue-number: ${{ steps.pr.outputs.number }}
           body: |
-            Uffizzi Preview deployed at URL:
-            ${{ steps.outputs.outputs.url }}
+            ## Uffizzi Preview Environment `${{ steps.outputs.outputs.id }}`
 
-            Uffizzi Preview deployment details at URI:
-            ${{ steps.outputs.outputs.containers_uri }}
+            :cloud: ${{ env.EXPECTED_URL }}
 
-            Uffizzi Preview ID: `${{ steps.outputs.outputs.id }}`
+            :page_facing_up: [View Application Logs etc.](${{ steps.outputs.outputs.containers_uri }})
 
-            ${{ steps.outputs.outputs.expiration }}
+            :alarm_clock: ${{ steps.outputs.outputs.expiration }}
           edit-mode: replace
           reactions: 'rocket'
