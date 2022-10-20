@@ -137,7 +137,7 @@ jobs:
         uses: docker://uffizzi/cli:v1
         with:
           entrypoint: bash
-          args: -c "/root/docker-entrypoint.sh && echo ::set-output name=id::$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=$PR_NUMBER\")"
+          args: -c "/root/docker-entrypoint.sh && echo DEPLOYMENT_ID=$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=$PR_NUMBER\") >> $GITHUB_ENV"
         env:
           UFFIZZI_PASSWORD: ${{ secrets.password }}
           UFFIZZI_SERVER: ${{ inputs.server }}
@@ -146,7 +146,7 @@ jobs:
           REQUEST_TOKEN: ${{ steps.ci-job-token.outputs.request-token }}
           REQUEST_TOKEN_URL: ${{ steps.ci-job-token.outputs.request-token-url }}
       - name: DEBUG - Echo deployment ID
-        run: 'echo ${{ steps.find-deployment.outputs.id }}'
+        run: 'echo ${{ env.DEPLOYMENT_ID }}'
       - name: Find comment for deployment URL
         uses: peter-evans/find-comment@v2
         id: find-comment
@@ -160,7 +160,7 @@ jobs:
         if: ${{ inputs.compose-file-cache-key == '' }}
         uses: UffizziCloud/delete-preview-action@v1
         with:
-          id: ${{ steps.find-deployment.outputs.id }}
+          id: ${{ env.DEPLOYMENT_ID }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
@@ -174,7 +174,7 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
-            Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
+            Uffizzi Preview `${{ env.DEPLOYMENT_ID }}` was deleted.
           edit-mode: replace
 
       - name: Create or Update Comment with Deployment Notification
@@ -206,7 +206,7 @@ jobs:
           key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy New Preview
         id: create-preview
-        if: ${{ steps.find-deployment.outputs.id == '' && inputs.compose-file-cache-key != '' }}
+        if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
         uses: UffizziCloud/preview-action@v2.4.0
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
@@ -238,14 +238,14 @@ jobs:
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
         id: url-auth-for-create
         shell: bash
-        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
+        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo "URL_AUTHENTICATION=true" >> $GITHUB_ENV ; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == '' }}
+        if: ${{ env.DEPLOYMENT_ID == '' && github.event.action != 'closed' && env.URL_AUTHENTICATION == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == 'true' }}
+        if: ${{ env.DEPLOYMENT_ID == '' && github.event.action != 'closed' && env.URL_AUTHENTICATION == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
@@ -253,9 +253,9 @@ jobs:
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
         id: update-preview
-        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' }}
+        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' }}
         with:
-          preview-id: ${{ steps.find-deployment.outputs.id }}
+          preview-id: ${{ env.DEPLOYMENT_ID }}
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
@@ -281,18 +281,13 @@ jobs:
           docker-registry-password: ${{ secrets.docker-registry-password }}
           docker-registry-url: ${{ secrets.docker-registry-url }}
 
-      - name: Check if URL Authentication is in use
-        # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
-        id: url-auth-for-update
-        shell: bash
-        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' && steps.url-auth-for-update.outputs.enabled == '' }}
+        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' && steps.url-auth-for-update.outputs.enabled == 'true' }}
+        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
