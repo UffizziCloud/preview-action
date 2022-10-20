@@ -127,6 +127,10 @@ Note that if this is an emtpy string, the reusable workflow will delete the prev
 
 (Optional) If you're controlling access to the URLs of your Preview Environments, set the credentials here so the workflow can confirm successful deployment.
 
+#### `healthcheck-url-extension`
+
+URL extension that will be appended to the preview URL where the reusable workflow will check for the health of the preview. 
+
 ## Uffizzi Accounts
 
 If you're using the reusable workflow with [Uffizzi Cloud](https://uffizzi.com), an account and project will be created from your GitHub user and repository information when the workflow runs. If you're self-hosting open-source Uffizzi, you will need to create a Uffizzi user and project before running the workflow, then set `username`, `password`, and `project` inputs, where `project` is the Uffizzi project slug.  
@@ -185,10 +189,6 @@ If you wish to use this action by itself outside of the reusable workflow descri
 #### `project`
 
 (Self-hosted only) Uffizzi project slug
-
-#### `healthcheck-url-extension`
-
-URL extension that will be appended to the preview URL where the reusable workflow will check for the health of the preview. 
 
 #### `ghcr-username` and `ghcr-access-token`
 
