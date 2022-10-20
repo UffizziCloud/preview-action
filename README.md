@@ -186,6 +186,10 @@ If you wish to use this action by itself outside of the reusable workflow descri
 
 (Self-hosted only) Uffizzi project slug
 
+#### `healthcheck-url-extension`
+
+URL extension that will be appended to the preview URL where the reusable workflow will check for the health of the preview. 
+
 #### `ghcr-username` and `ghcr-access-token`
 
 Your GitHub username and the value of a [Github personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) with access to the `read:packages` scope.
