@@ -30,6 +30,11 @@ on:
         default: ''
         required: false
         type: string
+      healthcheck-url-extension:
+        description: "URL Extension to the Uffizzi Preview URL where healthcheck would be performed"
+        default: ''
+        required: false
+        type: string
     secrets:
       password:
         description: "Uffizzi password for login"
@@ -223,7 +228,7 @@ jobs:
         if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-extension }}
       - name: Confirm Successful Preview Deployment with Authentication
         if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == 'true' }}
         uses: docker://curlimages/curl:7.84.0
