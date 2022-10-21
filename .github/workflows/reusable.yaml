@@ -30,6 +30,11 @@ on:
         default: ''
         required: false
         type: string
+      git-ref:
+        description: "Branch or other git reference to checkout"
+        default: ''
+        required: false
+        type: string
     secrets:
       password:
         description: "Uffizzi password for login"
@@ -197,6 +202,8 @@ jobs:
       - name: Checkout commit
         if: ${{ inputs.compose-file-cache-key != '' }}
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.git-ref }}
       - name: Fetch cached Compose File
         id: cache
         if: ${{ inputs.compose-file-cache-key != '' }}
