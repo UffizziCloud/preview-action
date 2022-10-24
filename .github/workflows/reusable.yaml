@@ -125,7 +125,7 @@ jobs:
           echo "PR_NUMBER=$OUTPUT_PR" >> $GITHUB_ENV
       - name: Predict Deployment URL
         id: url
-        run: echo "EXPECTED_URL=https://app.uffizzi.com/github.com/${{ github.repository }}/pull/$PR_NUMBER" >> $GITHUB_ENV
+        run: echo "EXPECTED_URL=${{ inputs.server }}/github.com/${{ github.repository }}/pull/$PR_NUMBER" >> $GITHUB_ENV
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
         id: ci-job-token
