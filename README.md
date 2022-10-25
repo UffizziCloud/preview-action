@@ -127,9 +127,9 @@ Note that if this is an emtpy string, the reusable workflow will delete the prev
 
 (Optional) If you're controlling access to the URLs of your Preview Environments, set the credentials here so the workflow can confirm successful deployment.
 
-#### `healthcheck-url-extension`
+#### `healthcheck-url-path`
 
-URL extension that will be appended to the preview URL where the reusable workflow will check for the health of the preview. 
+URL path that will be appended to the preview URL where the reusable workflow will check for the health of the preview. URL path has to start with `/`. Use this if the root URL of your application does not return an HTTP response code below 400.
 
 ## Uffizzi Accounts
 

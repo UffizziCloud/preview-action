@@ -30,8 +30,8 @@ on:
         default: ''
         required: false
         type: string
-      healthcheck-url-extension:
-        description: "URL Extension to the Uffizzi Preview URL where healthcheck would be performed"
+      healthcheck-url-path:
+        description: "URL Path to the Uffizzi Preview URL where healthcheck would be performed. The URL Path has to start with a '/'."
         default: ''
         required: false
         type: string
