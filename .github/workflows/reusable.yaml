@@ -228,12 +228,12 @@ jobs:
         if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-extension }}
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Confirm Successful Preview Deployment with Authentication
         if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-extension }}
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
 
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
@@ -275,12 +275,12 @@ jobs:
         if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' && steps.url-auth-for-update.outputs.enabled == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-extension }}
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Confirm Successful Preview Deployment with Authentication
         if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' && steps.url-auth-for-update.outputs.enabled == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-extension }}
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Job output consolidation
         id: outputs
         if: ${{ github.event.action != 'closed' }}
