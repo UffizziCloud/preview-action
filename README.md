@@ -1,12 +1,12 @@
 # On-demand Preview Environments
 
-Deploy a Preview Environment for every pull request. Supports APIs, frontends, backends, databases, microservices, binaries and command-line tools.  
+Deploy a Preview Environment for every pull request. Supports APIs, frontends, backends, databases, microservices, binaries and command-line tools.
 
 Uffizzi integrates as a step in your GitHub Actions pipeline to manage on-demand, ephemeral test environments for every feature branch/pull request. Preview Environments are deployed on [Uffizzi Cloud](https://uffizzi.com) (SaaS) or your own installation of [open-source Uffizzi](https://github.com/UffizziCloud/uffizzi_app) (self-hosting requires Kubernetes).
 
 ## Reusable Workflow (recommended)
 
-We've published a [Reusable Workflow](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow) for your GitHub Actions. This can handle creating, updating, and deleting Uffizzi Preview Environments. It will also publish Preview Environment URLs as a comment to your pull request issues.  
+We've published a [Reusable Workflow](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow) for your GitHub Actions. This can handle creating, updating, and deleting Uffizzi Preview Environments. It will also publish Preview Environment URLs as a comment to your pull request issues.
 
 💡 We recommend using this reusable workflow instead of using the individual actions for [create](https://github.com/UffizziCloud/preview-action), [update](https://github.com/UffizziCloud/update-preview-action), and [delete](https://github.com/UffizziCloud/delete-preview-action).
 
@@ -78,7 +78,7 @@ jobs:
   deploy-uffizzi-preview:
     name: Use Remote Workflow to Preview on Uffizzi
     needs: render-compose-file
-    uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2
+    uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2.6.0
     if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
     with:
       compose-file-cache-key: ${{ needs.render-compose-file.outputs.compose-file-cache-key }}
@@ -88,10 +88,10 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write
-      
+
   delete-uffizzi-preview:
     name: Use Remote Workflow to Delete an Existing Preview
-    uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2
+    uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2.6.0
     if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' }}
     with:
       compose-file-cache-key: ''
@@ -137,7 +137,7 @@ URL path that will be appended to the preview URL where the reusable workflow wi
 
 ## Uffizzi Accounts
 
-If you're using the reusable workflow with [Uffizzi Cloud](https://uffizzi.com), an account and project will be created from your GitHub user and repository information when the workflow runs. If you're self-hosting open-source Uffizzi, you will need to create a Uffizzi user and project before running the workflow, then set `username`, `password`, and `project` inputs, where `project` is the Uffizzi project slug.  
+If you're using the reusable workflow with [Uffizzi Cloud](https://uffizzi.com), an account and project will be created from your GitHub user and repository information when the workflow runs. If you're self-hosting open-source Uffizzi, you will need to create a Uffizzi user and project before running the workflow, then set `username`, `password`, and `project` inputs, where `project` is the Uffizzi project slug.
 
 ### Example usage Uffizzi Cloud
 
@@ -180,7 +180,7 @@ If you wish to use this action by itself outside of the reusable workflow descri
 
 #### `server`
 
-(Required) `https://app.uffizzi.com/` or the URL of your Uffizzi installation 
+(Required) `https://app.uffizzi.com/` or the URL of your Uffizzi installation
 
 #### `username`
 
