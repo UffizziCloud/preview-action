@@ -86,6 +86,9 @@ on:
       id:
         description: "Uffizzi Preview Deployment ID"
         value: ${{ jobs.uffizzi-preview.outputs.id }}
+      containers_uri:
+        description: 'URL to Uffizzi Deployment Details'
+        value: ${{ jobs.uffizzi-preview.outputs.containers_uri }}
       expiration_interval:
         description: "Uffizzi Preview Expiration Interval in Seconds"
         value: ${{ jobs.uffizzi-preview.outputs.expiration_interval }}
@@ -105,6 +108,7 @@ jobs:
     outputs:
       url: ${{ steps.outputs.outputs.url }}
       id: ${{ steps.outputs.outputs.id }}
+      containers_uri: ${{ steps.outputs.outputs.containers_uri }}
       expiration_interval: ${{ steps.outputs.outputs.expiration_interval }}
       expiration: ${{ steps.outputs.outputs.expiration }}
     steps:
