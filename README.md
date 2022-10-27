@@ -131,6 +131,10 @@ Note that if this is an emtpy string, the reusable workflow will delete the prev
 
 (Optional) If you're controlling access to the URLs of your Preview Environments, set the credentials here so the workflow can confirm successful deployment.
 
+#### `healthcheck-url-path`
+
+URL path that will be appended to the preview URL where the reusable workflow will check for the health of the preview. URL path has to start with `/`. Use this if the root URL of your application does not return an HTTP response code below 400.
+
 ## Uffizzi Accounts
 
 If you're using the reusable workflow with [Uffizzi Cloud](https://uffizzi.com), an account and project will be created from your GitHub user and repository information when the workflow runs. If you're self-hosting open-source Uffizzi, you will need to create a Uffizzi user and project before running the workflow, then set `username`, `password`, and `project` inputs, where `project` is the Uffizzi project slug.  

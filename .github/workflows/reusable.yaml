@@ -35,6 +35,11 @@ on:
         default: ''
         required: false
         type: string
+      healthcheck-url-path:
+        description: "URL Path to the Uffizzi Preview URL where healthcheck would be performed. The URL Path has to start with a '/'."
+        default: ''
+        required: false
+        type: string
     secrets:
       password:
         description: "Uffizzi password for login"
@@ -91,6 +96,9 @@ on:
       id:
         description: "Uffizzi Preview Deployment ID"
         value: ${{ jobs.uffizzi-preview.outputs.id }}
+      containers_uri:
+        description: 'URL to Uffizzi Deployment Details'
+        value: ${{ jobs.uffizzi-preview.outputs.containers_uri }}
       expiration_interval:
         description: "Uffizzi Preview Expiration Interval in Seconds"
         value: ${{ jobs.uffizzi-preview.outputs.expiration_interval }}
@@ -110,6 +118,7 @@ jobs:
     outputs:
       url: ${{ steps.outputs.outputs.url }}
       id: ${{ steps.outputs.outputs.id }}
+      containers_uri: ${{ steps.outputs.outputs.containers_uri }}
       expiration_interval: ${{ steps.outputs.outputs.expiration_interval }}
       expiration: ${{ steps.outputs.outputs.expiration }}
     steps:
@@ -250,12 +259,12 @@ jobs:
         if: ${{ env.DEPLOYMENT_ID == '' && github.event.action != 'closed' && env.URL_AUTHENTICATION == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Confirm Successful Preview Deployment with Authentication
         if: ${{ env.DEPLOYMENT_ID == '' && github.event.action != 'closed' && env.URL_AUTHENTICATION == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
 
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
@@ -292,12 +301,12 @@ jobs:
         if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Confirm Successful Preview Deployment with Authentication
         if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Job output consolidation
         id: outputs
         if: ${{ github.event.action != 'closed' }}
