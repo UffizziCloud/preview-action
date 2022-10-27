@@ -123,6 +123,10 @@ Note that if this is an emtpy string, the reusable workflow will delete the prev
 
 (Optional) If you're calling this workflow from a workflow that's not triggered by `pull_request`, you may want to specify the PR number here.
 
+#### `git-ref`
+
+(Optional) If you're calling this workflow from a workflow that's not triggered by `pull_request`, you may want to specify the branch or other git reference here.
+
 #### `url-username` and `url-password`
 
 (Optional) If you're controlling access to the URLs of your Preview Environments, set the credentials here so the workflow can confirm successful deployment.
