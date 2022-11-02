@@ -328,7 +328,7 @@ jobs:
           echo "OUTPUT_URL=$OUTPUT_URL" >> $GITHUB_ENV
           echo "OUTPUT_CONTAINERS=$OUTPUT_CONTAINERS" >> $GITHUB_ENV
 
-          export EXPIRATION_HOURS=$(grep --perl-regexp --only-matching 'delete_preview_after: \K\d+' ${{ inputs.compose-file-cache-path }})
+          export EXPIRATION_HOURS=$(grep --perl-regexp --only-matching '^[ \t]*(?!#)delete_preview_after: \K\d+' ${{ inputs.compose-file-cache-path }})
           if [ -z "$EXPIRATION_HOURS" ]
           then
             echo "No preview expiration parameter found."
