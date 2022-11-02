@@ -342,6 +342,13 @@ jobs:
             echo "EXPIRATION=This Preview will be destroyed in $EXPIRATION_HOURS hours at: $EXPIRATION" >> $GITHUB_ENV
           fi
 
+          # Expose the step output variables
+          echo "url=$OUTPUT_URL" >> $GITHUB_OUTPUT
+          echo "id=$OUTPUT_ID" >> $GITHUB_OUTPUT
+          echo "containers_uri=$OUTPUT_CONTAINERS" >> $GITHUB_OUTPUT
+          echo "expiration_interval=$EXPIRATION_INTERVAL" >> $GITHUB_OUTPUT
+          echo "expiration=$EXPIRATION" >> $GITHUB_OUTPUT
+
       - name: Create or Update Comment with Deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ inputs.compose-file-cache-key != '' }}
