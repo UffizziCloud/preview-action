@@ -30,6 +30,16 @@ on:
         default: ''
         required: false
         type: string
+      git-ref:
+        description: "Branch or other git reference to checkout"
+        default: ''
+        required: false
+        type: string
+      healthcheck-url-path:
+        description: "URL Path to the Uffizzi Preview URL where healthcheck would be performed. The URL Path has to start with a '/'."
+        default: ''
+        required: false
+        type: string
     secrets:
       password:
         description: "Uffizzi password for login"
@@ -121,7 +131,10 @@ jobs:
           export INPUT_PR=${{ inputs.pr-number }}
           export CONTEXT_PR=${{ github.event.number }}
           export OUTPUT_PR=${INPUT_PR:-$CONTEXT_PR}
-          echo "::set-output name=number::$OUTPUT_PR"
+          echo "PR_NUMBER=$OUTPUT_PR" >> $GITHUB_ENV
+      - name: Predict Deployment URL
+        id: url
+        run: echo "EXPECTED_URL=${{ inputs.server }}/github.com/${{ github.repository }}/pull/$PR_NUMBER" >> $GITHUB_ENV
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
         id: ci-job-token
@@ -138,7 +151,7 @@ jobs:
         uses: docker://uffizzi/cli:v1
         with:
           entrypoint: bash
-          args: -c "/root/docker-entrypoint.sh && echo ::set-output name=id::$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=${{ steps.pr.outputs.number }}\")"
+          args: -c "/root/docker-entrypoint.sh && echo DEPLOYMENT_ID=$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=$PR_NUMBER\") >> $GITHUB_ENV"
         env:
           UFFIZZI_PASSWORD: ${{ secrets.password }}
           UFFIZZI_SERVER: ${{ inputs.server }}
@@ -147,21 +160,21 @@ jobs:
           REQUEST_TOKEN: ${{ steps.ci-job-token.outputs.request-token }}
           REQUEST_TOKEN_URL: ${{ steps.ci-job-token.outputs.request-token-url }}
       - name: DEBUG - Echo deployment ID
-        run: 'echo ${{ steps.find-deployment.outputs.id }}'
+        run: 'echo ${{ env.DEPLOYMENT_ID }}'
       - name: Find comment for deployment URL
         uses: peter-evans/find-comment@v2
         id: find-comment
         with:
-          issue-number: ${{ steps.pr.outputs.number }}
+          issue-number: ${{ env.PR_NUMBER }}
           comment-author: 'github-actions[bot]'
-          body-includes: 'Uffizzi Preview ID:'
+          body-includes: '${{ env.EXPECTED_URL }}'
           direction: last
 
       - name: Delete Preview from Uffizzi
         if: ${{ inputs.compose-file-cache-key == '' }}
         uses: UffizziCloud/delete-preview-action@v1
         with:
-          id: ${{ steps.find-deployment.outputs.id }}
+          id: ${{ env.DEPLOYMENT_ID }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
@@ -173,14 +186,33 @@ jobs:
         if: ${{ inputs.compose-file-cache-key == '' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ steps.pr.output.number }}
+          issue-number: ${{ env.PR_NUMBER }}
           body: |
-            Uffizzi Preview `${{ steps.find-deployment.outputs.id }}` was deleted.
+            Uffizzi Preview `${{ env.DEPLOYMENT_ID }}` was deleted.
+          edit-mode: replace
+
+      - name: Create or Update Comment with Deployment Notification
+        id: notification
+        uses: peter-evans/create-or-update-comment@v2
+        if: ${{ inputs.compose-file-cache-key != '' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            ## Uffizzi Preview Environment
+
+            :cloud: ${{ env.EXPECTED_URL }}
+
+            :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
+
+            What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace
 
       - name: Checkout commit
         if: ${{ inputs.compose-file-cache-key != '' }}
         uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.git-ref }}
       - name: Fetch cached Compose File
         id: cache
         if: ${{ inputs.compose-file-cache-key != '' }}
@@ -190,8 +222,8 @@ jobs:
           key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy New Preview
         id: create-preview
-        if: ${{ steps.find-deployment.outputs.id == '' && inputs.compose-file-cache-key != '' }}
-        uses: UffizziCloud/preview-action@v2.4.0
+        if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
+        uses: UffizziCloud/preview-action@v2.5.0
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
@@ -200,7 +232,7 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
-          github-event-number: ${{ steps.pr.outputs.number }}
+          github-event-number: ${{ env.PR_NUMBER }}
           github-ref: ${{ github.ref }}
           github-repository: ${{ github.repository }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
@@ -222,24 +254,24 @@ jobs:
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
         id: url-auth-for-create
         shell: bash
-        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
+        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo "URL_AUTHENTICATION=true" >> $GITHUB_ENV ; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == '' }}
+        if: ${{ env.DEPLOYMENT_ID == '' && github.event.action != 'closed' && env.URL_AUTHENTICATION == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-deployment.outputs.id == '' && github.event.action != 'closed' && steps.url-auth-for-create.outputs.enabled == 'true' }}
+        if: ${{ env.DEPLOYMENT_ID == '' && github.event.action != 'closed' && env.URL_AUTHENTICATION == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
 
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
         id: update-preview
-        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' }}
+        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' }}
         with:
-          preview-id: ${{ steps.find-deployment.outputs.id }}
+          preview-id: ${{ env.DEPLOYMENT_ID }}
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
@@ -247,7 +279,7 @@ jobs:
           password: ${{ secrets.password }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
-          github-event-number: ${{ steps.pr.outputs.number }}
+          github-event-number: ${{ env.PR_NUMBER }}
           github-ref: ${{ github.ref }}
           github-repository: ${{ github.repository }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
@@ -265,21 +297,16 @@ jobs:
           docker-registry-password: ${{ secrets.docker-registry-password }}
           docker-registry-url: ${{ secrets.docker-registry-url }}
 
-      - name: Check if URL Authentication is in use
-        # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
-        id: url-auth-for-update
-        shell: bash
-        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo '::set-output name=enabled::true'; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' && steps.url-auth-for-update.outputs.enabled == '' }}
+        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == '' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ steps.find-deployment.outputs.id != '' && inputs.compose-file-cache-key != '' && steps.url-auth-for-update.outputs.enabled == 'true' }}
+        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == 'true' }}
         uses: docker://curlimages/curl:7.84.0
         with:
-          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Job output consolidation
         id: outputs
         if: ${{ github.event.action != 'closed' }}
@@ -297,9 +324,9 @@ jobs:
 
           echo "Deployment ID $OUTPUT_ID at $OUTPUT_URL"
 
-          echo "::set-output name=id::$OUTPUT_ID"
-          echo "::set-output name=url::$OUTPUT_URL"
-          echo "::set-output name=containers_uri::$OUTPUT_CONTAINERS"
+          echo "OUTPUT_ID=$OUTPUT_ID" >> $GITHUB_ENV
+          echo "OUTPUT_URL=$OUTPUT_URL" >> $GITHUB_ENV
+          echo "OUTPUT_CONTAINERS=$OUTPUT_CONTAINERS" >> $GITHUB_ENV
 
           export EXPIRATION_HOURS=$(grep --perl-regexp --only-matching 'delete_preview_after: \K\d+' ${{ inputs.compose-file-cache-path }})
           if [ -z "$EXPIRATION_HOURS" ]
@@ -311,25 +338,24 @@ jobs:
 
             echo "Expiring in $EXPIRATION_INTERVAL seconds at $EXPIRATION."
 
-            echo "::set-output name=expiration_interval::$EXPIRATION_INTERVAL"
-            echo "::set-output name=expiration::This Preview will be destroyed in $EXPIRATION_HOURS hours at: $EXPIRATION"
+            echo "EXPIRATION_INTERVAL=$EXPIRATION_INTERVAL" >> $GITHUB_ENV
+            echo "EXPIRATION=This Preview will be destroyed in $EXPIRATION_HOURS hours at: $EXPIRATION" >> $GITHUB_ENV
           fi
 
       - name: Create or Update Comment with Deployment URL
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ inputs.compose-file-cache-key != '' }}
         with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ steps.pr.outputs.number }}
+          comment-id: ${{ steps.notification.outputs.comment-id }}
+          issue-number: ${{ env.PR_NUMBER }}
           body: |
-            Uffizzi Preview deployed at URL:
-            ${{ steps.outputs.outputs.url }}
+            ## Uffizzi Preview Environment `${{ env.OUTPUT_ID }}`
 
-            Uffizzi Preview deployment details at URI:
-            ${{ steps.outputs.outputs.containers_uri }}
+            :cloud: ${{ env.EXPECTED_URL }}
 
-            Uffizzi Preview ID: `${{ steps.outputs.outputs.id }}`
+            :page_facing_up: [View Application Logs etc.](${{ env.OUTPUT_CONTAINERS }})
 
-            ${{ steps.outputs.outputs.expiration }}
+            :alarm_clock: ${{ env.EXPIRATION }}
+
+            What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace
-          reactions: 'rocket'
