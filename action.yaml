@@ -90,7 +90,9 @@ outputs:
   expiration_interval:
     description: "Expiration interval in seconds"
   expiration:
-    description: 'Expiration timestamp as a string'
+    description: 'Expiration as a string'
+  expiration_timestamp:
+    description: 'Expiration as a UNIX timestamp'
 runs:
   using: 'docker'
   image: 'docker://uffizzi/cli:v1'
