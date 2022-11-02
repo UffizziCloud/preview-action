@@ -339,7 +339,7 @@ jobs:
             echo "Expiring in $EXPIRATION_INTERVAL seconds at $EXPIRATION."
 
             echo "EXPIRATION_INTERVAL=$EXPIRATION_INTERVAL" >> $GITHUB_ENV
-            echo "EXPIRATION=This Preview will be destroyed in $EXPIRATION_HOURS hours at: $EXPIRATION" >> $GITHUB_ENV
+            echo "EXPIRATION=:alarm_clock: This Preview will be destroyed in $EXPIRATION_HOURS hours at: $EXPIRATION" >> $GITHUB_ENV
           fi
 
           # Expose the step output variables
@@ -362,7 +362,7 @@ jobs:
 
             :page_facing_up: [View Application Logs etc.](${{ env.OUTPUT_CONTAINERS }})
 
-            :alarm_clock: ${{ env.EXPIRATION }}
+            ${{ env.EXPIRATION }}
 
             What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace
