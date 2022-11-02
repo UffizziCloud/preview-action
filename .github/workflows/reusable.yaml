@@ -103,8 +103,11 @@ on:
         description: "Uffizzi Preview Expiration Interval in Seconds"
         value: ${{ jobs.uffizzi-preview.outputs.expiration_interval }}
       expiration:
-        description: "Uffizzi Preview Expiration Timestamp String"
+        description: "Uffizzi Preview Expiration Time String"
         value: ${{ jobs.uffizzi-preview.outputs.expiration }}
+      expiration_timestamp:
+        description: "Uffizzi Preview Expiration UNIX Timestamp"
+        value: ${{ jobs.uffizzi-preview.outputs.expiration_timestamp }}
 
 permissions:
   contents: read
@@ -121,6 +124,7 @@ jobs:
       containers_uri: ${{ steps.outputs.outputs.containers_uri }}
       expiration_interval: ${{ steps.outputs.outputs.expiration_interval }}
       expiration: ${{ steps.outputs.outputs.expiration }}
+      expiration_timestamp: ${{ steps.outputs.outputs.expiration_timestamp }}
     steps:
       - name: DEBUG - Dump GitHub context and environment info
         if: ${{ runner.debug }}
@@ -328,19 +332,28 @@ jobs:
           echo "OUTPUT_URL=$OUTPUT_URL" >> $GITHUB_ENV
           echo "OUTPUT_CONTAINERS=$OUTPUT_CONTAINERS" >> $GITHUB_ENV
 
-          export EXPIRATION_HOURS=$(grep --perl-regexp --only-matching 'delete_preview_after: \K\d+' ${{ inputs.compose-file-cache-path }})
+          export EXPIRATION_HOURS=$(grep --perl-regexp --only-matching '^[ \t]*(?!#)delete_preview_after: \K\d+' ${{ inputs.compose-file-cache-path }})
           if [ -z "$EXPIRATION_HOURS" ]
           then
             echo "No preview expiration parameter found."
           else
             export EXPIRATION_INTERVAL=$(( $EXPIRATION_HOURS * 3600 ))
-            export EXPIRATION=$(date --utc --date=@$(($(date +'%s') + $EXPIRATION_INTERVAL)))
+            export EXPIRATION_TIMESTAMP=$(date +'%s')
+            export EXPIRATION=$(date --utc --date=@$(($EXPIRATION_TIMESTAMP + $EXPIRATION_INTERVAL)))
 
             echo "Expiring in $EXPIRATION_INTERVAL seconds at $EXPIRATION."
 
             echo "EXPIRATION_INTERVAL=$EXPIRATION_INTERVAL" >> $GITHUB_ENV
-            echo "EXPIRATION=This Preview will be destroyed in $EXPIRATION_HOURS hours at: $EXPIRATION" >> $GITHUB_ENV
+            echo "EXPIRATION=:alarm_clock: This Preview will be destroyed in $EXPIRATION_HOURS hours at: $EXPIRATION" >> $GITHUB_ENV
           fi
+
+          # Expose the step output variables
+          echo "url=$OUTPUT_URL" >> $GITHUB_OUTPUT
+          echo "id=$OUTPUT_ID" >> $GITHUB_OUTPUT
+          echo "containers_uri=$OUTPUT_CONTAINERS" >> $GITHUB_OUTPUT
+          echo "expiration_interval=$EXPIRATION_INTERVAL" >> $GITHUB_OUTPUT
+          echo "expiration=$EXPIRATION" >> $GITHUB_OUTPUT
+          echo "expiration_timestamp=$EXPIRATION_TIMESTAMP" >> $GITHUB_OUTPUT
 
       - name: Create or Update Comment with Deployment URL
         uses: peter-evans/create-or-update-comment@v2
@@ -355,7 +368,7 @@ jobs:
 
             :page_facing_up: [View Application Logs etc.](${{ env.OUTPUT_CONTAINERS }})
 
-            :alarm_clock: ${{ env.EXPIRATION }}
+            ${{ env.EXPIRATION }}
 
             What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace

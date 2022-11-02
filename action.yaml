@@ -87,6 +87,12 @@ outputs:
     description: 'ID of preview for later reference'
   containers_uri:
     description: 'URI to the deployment details'
+  expiration_interval:
+    description: "Expiration interval in seconds"
+  expiration:
+    description: 'Expiration as a string'
+  expiration_timestamp:
+    description: 'Expiration as a UNIX timestamp'
 runs:
   using: 'docker'
   image: 'docker://uffizzi/cli:v1'
