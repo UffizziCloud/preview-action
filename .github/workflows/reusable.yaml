@@ -163,6 +163,7 @@ jobs:
           UFFIZZI_PROJECT: ${{ inputs.project }}
           REQUEST_TOKEN: ${{ steps.ci-job-token.outputs.request-token }}
           REQUEST_TOKEN_URL: ${{ steps.ci-job-token.outputs.request-token-url }}
+          HEAD_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
       - name: DEBUG - Echo deployment ID
         run: 'echo ${{ env.DEPLOYMENT_ID }}'
       - name: Find comment for deployment URL
