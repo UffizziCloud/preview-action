@@ -228,7 +228,7 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
-        uses: UffizziCloud/preview-action@v2.5.0
+        uses: UffizziCloud/preview-action@feature/351_outside_collaborators
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
@@ -272,7 +272,7 @@ jobs:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@v1
+        uses: UffizziCloud/preview-action@feature/351_outside_collaborators
         id: update-preview
         if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' }}
         with:
