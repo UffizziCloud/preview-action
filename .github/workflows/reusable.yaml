@@ -131,7 +131,7 @@ jobs:
       - name: Debug OIDC token
         run: |
           OIDC_TOKEN=$(curl -sLS "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=uffizzi" -H "User-Agent: actions/oidc-client" -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN")
-          jq -R 'split(".") | .[0],.[1] | @base64d | fromjson' <<< $OIDC_TOKEN
+          jq -j '.value | split(".") | .[0],.[1]  | @base64d | fromjson' <<< $OIDC_TOKEN
       # If PR event, look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
