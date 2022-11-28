@@ -179,7 +179,7 @@ jobs:
 
       - name: Delete Preview from Uffizzi
         if: ${{ inputs.compose-file-cache-key == '' }}
-        uses: UffizziCloud/delete-preview-action@v1
+        uses: UffizziCloud/delete-preview-action@feature/351_view_only_gha
         with:
           id: ${{ env.DEPLOYMENT_ID }}
           username: ${{ inputs.username }}
