@@ -12,7 +12,6 @@ inputs:
   server:
     description: 'URL to Uffizzi'
     required: true
-    default: 'https://bc02-190-21-43-124.sa.ngrok.io'
   username:
     description: 'Uffizzi username'
     required: false
