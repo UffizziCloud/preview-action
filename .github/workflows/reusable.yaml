@@ -17,8 +17,7 @@ on:
         type: string
       server:
         description: "Uffizzi server URL"
-        default: https://app.uffizzi.com
-        required: false
+        required: true
         type: string
       project:
         description: "Uffizzi project name"
