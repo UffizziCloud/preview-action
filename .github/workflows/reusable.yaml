@@ -140,7 +140,7 @@ jobs:
         id: url
         # Replace dots in the repo name with the plus sign
         run: |
-          REPO=$(echo ${{ github.repository }} | sed 's/\./+/g'
+          REPO=$(echo ${{ github.repository }} | sed 's/\./+/g')
           echo "EXPECTED_URL=${{ inputs.server }}/github.com/$REPO/pull/$PR_NUMBER" >> $GITHUB_ENV
       - name: Obtain an a job token and an OIDC token request url from GHA
         uses: actions/github-script@v6
