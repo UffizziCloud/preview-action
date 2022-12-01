@@ -219,7 +219,7 @@ jobs:
         if: ${{ inputs.compose-file-cache-key != '' }}
         uses: actions/checkout@v3
         with:
-          ref: ${{ inputs.git-ref }}
+          ref: ${{ github.event.pull_request.head.sha }}
       - name: Fetch cached Compose File
         id: cache
         if: ${{ inputs.compose-file-cache-key != '' }}
