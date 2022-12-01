@@ -12,6 +12,7 @@ inputs:
   server:
     description: 'URL to Uffizzi'
     required: true
+    default: 'https://app.uffizzi.com'
   username:
     description: 'Uffizzi username'
     required: false
