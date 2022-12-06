@@ -43,6 +43,11 @@ on:
         default: ''
         required: false
         type: string
+      description:
+        description: "Description added to the preview comment"
+        default: ''
+        required: false
+        type: string
     secrets:
       access-token:
         description: 'Github pipeline token'
@@ -413,6 +418,8 @@ jobs:
             :page_facing_up: [View Application Logs etc.](${{ env.OUTPUT_CONTAINERS }})
 
             ${{ env.EXPIRATION }}
+
+            ${{ inputs.description }}
 
             What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace
