@@ -231,7 +231,7 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
-        uses: UffizziCloud/preview-action@v2
+        uses: UffizziCloud/preview-action@feature/49_pass_github_token_as_param
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
