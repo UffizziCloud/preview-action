@@ -258,7 +258,6 @@ jobs:
           docker-registry-username: ${{ secrets.docker-registry-username }}
           docker-registry-password: ${{ secrets.docker-registry-password }}
           docker-registry-url: ${{ secrets.docker-registry-url }}
-          access-token: ${{ github.token }}
 
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
