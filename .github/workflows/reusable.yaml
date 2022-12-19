@@ -89,6 +89,7 @@ on:
       docker-registry-url:
         description: 'Custom docker registry url'
         required: false
+  
     outputs:
       url:
         description: "URL to Uffizzi Preview Environment"
@@ -230,13 +231,14 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
-        uses: UffizziCloud/preview-action@v2.5.0
+        uses: UffizziCloud/preview-action@v2
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
+          access-token: ${{ github.token }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
           github-event-number: ${{ env.PR_NUMBER }}
@@ -256,6 +258,7 @@ jobs:
           docker-registry-username: ${{ secrets.docker-registry-username }}
           docker-registry-password: ${{ secrets.docker-registry-password }}
           docker-registry-url: ${{ secrets.docker-registry-url }}
+          access_token: ${{ github.token }}
 
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
