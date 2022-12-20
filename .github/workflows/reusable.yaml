@@ -41,6 +41,9 @@ on:
         required: false
         type: string
     secrets:
+      access-token:
+        description: 'Github pipeline token'
+        required: false
       password:
         description: "Uffizzi password for login"
         required: false
@@ -238,7 +241,7 @@ jobs:
           server: ${{ inputs.server }}
           project: ${{ inputs.project }}
           password: ${{ secrets.password }}
-          access-token: ${{ github.token }}
+          access-token: ${{ secrets.access-token }}
           ghcr-username: ${{ github.actor }}
           ghcr-access-token: ${{ secrets.personal-access-token }}
           github-event-number: ${{ env.PR_NUMBER }}
