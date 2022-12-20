@@ -7,7 +7,7 @@ branding:
 inputs:
   access-token:
     description: 'GitHub workflow access token'
-    required: true
+    required: false
   compose-file:
     description: 'An alternate compose file'
     required: false
