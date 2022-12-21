@@ -146,6 +146,8 @@ uses: UffizziCloud/preview-action@v2
 with:
   compose-file: 'docker-compose.uffizzi.yaml'
   server: 'https://app.uffizzi.com'
+  secrets:
+    access-token: ${{ secrets.GITHUB_TOKEN }}
 permissions:
   contents: read
   pull-requests: write
@@ -193,6 +195,10 @@ If you wish to use this action by itself outside of the reusable workflow descri
 #### `project`
 
 (Self-hosted only) Uffizzi project slug
+
+#### `access-token`
+
+(Optional) The value of the `${{ secrets.GITHUB_TOKEN }}`. Used to avoid hitting the Github request rate limit.
 
 #### `ghcr-username` and `ghcr-access-token`
 
