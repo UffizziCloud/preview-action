@@ -152,6 +152,21 @@ jobs:
             const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
             core.setOutput('request-token', token.trim())
             core.setOutput('request-token-url', runtimeUrl.trim())
+
+      - name: Checkout commit
+        if: ${{ inputs.compose-file-cache-key != '' }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fetch cached Compose File
+        id: cache
+        if: ${{ inputs.compose-file-cache-key != '' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.compose-file-cache-path }}
+          key: ${{ inputs.compose-file-cache-key }}
+
       # If PR event, look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
@@ -215,18 +230,6 @@ jobs:
             What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace
 
-      - name: Checkout commit
-        if: ${{ inputs.compose-file-cache-key != '' }}
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Fetch cached Compose File
-        id: cache
-        if: ${{ inputs.compose-file-cache-key != '' }}
-        uses: actions/cache@v3
-        with:
-          path: ${{ inputs.compose-file-cache-path }}
-          key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
