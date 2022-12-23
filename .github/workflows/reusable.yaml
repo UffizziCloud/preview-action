@@ -240,7 +240,7 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
-        uses: UffizziCloud/preview-action@v2
+        uses: UffizziCloud/preview-action@feature/54_pass_creation_source_to_cli
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
