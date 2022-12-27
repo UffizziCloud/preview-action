@@ -5,6 +5,9 @@ branding:
   color: 'yellow'
   icon: 'upload-cloud'
 inputs:
+  access-token:
+    description: 'GitHub workflow access token'
+    required: false
   compose-file:
     description: 'An alternate compose file'
     required: false
@@ -103,6 +106,7 @@ runs:
     - '--set-labels=github.ref=${{ inputs.github-ref }} github.repository=${{ inputs.github-repository }} github.event.number=${{ inputs.github-event-number }}'
     - ${{ inputs.compose-file }}
   env:
+    ACCESS_TOKEN:  ${{ inputs.access-token }}
     UFFIZZI_PASSWORD: ${{ inputs.password }}
     UFFIZZI_SERVER: ${{ inputs.server }}
     UFFIZZI_USER: ${{ inputs.username }}
