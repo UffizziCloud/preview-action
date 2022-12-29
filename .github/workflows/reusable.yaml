@@ -162,7 +162,7 @@ jobs:
       # If PR event, look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
-        uses: docker://uffizzi/cli:pr-201
+        uses: docker://uffizzi/cli:v1
         with:
           entrypoint: bash
           args: -c "/root/docker-entrypoint.sh && echo DEPLOYMENT_ID=$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=$PR_NUMBER\") >> $GITHUB_ENV"
@@ -188,7 +188,7 @@ jobs:
 
       - name: Delete Preview from Uffizzi
         if: ${{ inputs.compose-file-cache-key == '' }}
-        uses: UffizziCloud/delete-preview-action@feature/7_send-errors-from-cli-to-sentry
+        uses: UffizziCloud/delete-preview-action@v1
         with:
           id: ${{ env.DEPLOYMENT_ID }}
           username: ${{ inputs.username }}
@@ -240,7 +240,7 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
-        uses: UffizziCloud/preview-action@feature/51_send-errors-from-cli-to-sentry
+        uses: UffizziCloud/preview-action@v2
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
@@ -286,7 +286,7 @@ jobs:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@feature/8_send-errors-from-cli-to-sentry
+        uses: UffizziCloud/update-preview-action@v1
         id: update-preview
         if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' }}
         with:

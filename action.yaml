@@ -101,7 +101,7 @@ outputs:
     description: 'Expiration as a UNIX timestamp'
 runs:
   using: 'docker'
-  image: 'docker://uffizzi/cli:pr-201'
+  image: 'docker://uffizzi/cli:v1'
   args:
     - 'preview'
     - 'create'
