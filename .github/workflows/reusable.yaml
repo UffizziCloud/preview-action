@@ -159,7 +159,7 @@ jobs:
       # If PR event, look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
-        uses: docker://limoha/cli:latest
+        uses: docker://uffizzi/cli:v1
         with:
           entrypoint: bash
           args: -c "/root/docker-entrypoint.sh && echo DEPLOYMENT_ID=$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=$PR_NUMBER\") >> $GITHUB_ENV"
