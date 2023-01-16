@@ -173,6 +173,7 @@ jobs:
           UFFIZZI_PROJECT: ${{ inputs.project }}
           REQUEST_TOKEN: ${{ steps.ci-job-token.outputs.request-token }}
           REQUEST_TOKEN_URL: ${{ steps.ci-job-token.outputs.request-token-url }}
+          ACCESS_TOKEN: ${{ secrets.access-token }}
           LOGGER_KEY: ${{ env.LOGGER_KEY }}
           CI_WORKFLOW: "true"
       - name: DEBUG - Echo deployment ID
