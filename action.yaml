@@ -79,7 +79,10 @@ inputs:
   docker-registry-url:
     description: 'Custom docker registry url'
     required: false
-  
+  logger-key:
+    description: 'Logger key'
+    required: false
+
 outputs:
   url:
     description: 'URL where preview was deployed, if successful'
@@ -123,4 +126,5 @@ runs:
     DOCKER_REGISTRY_USERNAME: ${{ inputs.docker-registry-username }}
     DOCKER_REGISTRY_PASSWORD: ${{ inputs.docker-registry-password }}
     DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
-
+    CI_WORKFLOW: "true"
+    LOGGER_KEY: ${{ inputs.logger-key }}

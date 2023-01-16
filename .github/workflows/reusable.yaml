@@ -1,5 +1,8 @@
 name: Reusable Uffizzi Preview Workflow
 
+env:
+  LOGGER_KEY: "aHR0cHM6Ly80NGI3Zjk5MTFiODU0NWI5YTMzMDY4NzRhY2ZjYjJjOUBvMzI0MzExLmluZ2VzdC5zZW50cnkuaW8vNDUwNDM2MTIxMjI0ODA2NA=="
+
 on:
   workflow_call:
     inputs:
@@ -171,6 +174,8 @@ jobs:
           REQUEST_TOKEN: ${{ steps.ci-job-token.outputs.request-token }}
           REQUEST_TOKEN_URL: ${{ steps.ci-job-token.outputs.request-token-url }}
           ACCESS_TOKEN: ${{ secrets.access-token }}
+          LOGGER_KEY: ${{ env.LOGGER_KEY }}
+          CI_WORKFLOW: "true"
       - name: DEBUG - Echo deployment ID
         run: 'echo ${{ env.DEPLOYMENT_ID }}'
       - name: Find comment for deployment URL
@@ -193,6 +198,7 @@ jobs:
           password: ${{ secrets.password }}
           request-token: ${{ steps.ci-job-token.outputs.request-token }}
           request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
+          logger-key: ${{ env.LOGGER_KEY }}
       - name: Update Comment with Deletion
         uses: peter-evans/create-or-update-comment@v2
         if: ${{ inputs.compose-file-cache-key == '' }}
@@ -262,6 +268,7 @@ jobs:
           docker-registry-username: ${{ secrets.docker-registry-username }}
           docker-registry-password: ${{ secrets.docker-registry-password }}
           docker-registry-url: ${{ secrets.docker-registry-url }}
+          logger-key: ${{ env.LOGGER_KEY }}
 
       - name: Check if URL Authentication is in use
         # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
@@ -309,6 +316,7 @@ jobs:
           docker-registry-username: ${{ secrets.docker-registry-username }}
           docker-registry-password: ${{ secrets.docker-registry-password }}
           docker-registry-url: ${{ secrets.docker-registry-url }}
+          logger-key: ${{ env.LOGGER_KEY }}
 
       - name: Confirm Successful Preview Deployment
         if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == '' }}
