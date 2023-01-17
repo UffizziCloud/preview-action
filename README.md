@@ -24,7 +24,7 @@ on:
 jobs:
   build-image:
     name: Build and Push image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       # You'll need this output later to render the Compose file.
       tags: ${{ steps.meta.outputs.tags }}
@@ -50,7 +50,7 @@ jobs:
 
   render-compose-file:
     name: Render Docker Compose File
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
       - build-image
     outputs:
