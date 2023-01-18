@@ -306,7 +306,7 @@ jobs:
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
         id: update-preview
-        if: ${{ github.event.action == 'update' }}
+        if: ${{ env.UFFIZZI_ACTION == 'update' }}
         with:
           preview-id: ${{ env.DEPLOYMENT_ID }}
           compose-file: ${{ inputs.compose-file-cache-path }}
