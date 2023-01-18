@@ -230,7 +230,7 @@ jobs:
                 action = 'delete';
               }
             } else {
-              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor `\closed\` but \`${pr.state}\`.`);
+              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor \`closed\` but \`${pr.state}\`.`);
             }
 
             core.exportVariable('UFFIZZI_ACTION', action);
@@ -434,7 +434,7 @@ jobs:
                 action = 'delete';
               }
             } else {
-              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor `\closed\` but \`${pr.state}\`.`);
+              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor \`closed\` but \`${pr.state}\`.`);
             }
 
             core.exportVariable('UFFIZZI_ACTION', action);
