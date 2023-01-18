@@ -192,9 +192,9 @@ jobs:
             let action = 'none'; // default
             const { PR_NUMBER, DEPLOYMENT_ID } = process.env;
             const pr = github.rest.pulls.get({
-              github.context.owner,
-              github.context.repo,
-              PR_NUMBER
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: PR_NUMBER
             });
 
             // Retain legacy behavior if we're passed this input empty.
@@ -416,9 +416,9 @@ jobs:
             let action = process.env.UFFIZZI_ACTION;
             const { PR_NUMBER, DEPLOYMENT_ID } = process.env;
             const pr = github.rest.pulls.get({
-              github.context.owner,
-              github.context.repo,
-              PR_NUMBER
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: PR_NUMBER
             });
 
             // `state` is either `open` or `closed`.
