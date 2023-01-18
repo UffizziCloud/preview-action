@@ -196,9 +196,10 @@ jobs:
               repo: context.repo.repo,
               pull_number: PR_NUMBER
             });
+            const cacheKey = core.getInput('compose-file-cache-key');
 
             // Retain legacy behavior if we're passed this input empty.
-            if (core.getInput('compose-file-cache-key') == '') {
+            if (cacheKey == '') {
               if (DEPLOYMENT_ID == '') {
                 core.setFailed(`No compose file passed and no deployment found. No operation.`);
                 action = 'none';
