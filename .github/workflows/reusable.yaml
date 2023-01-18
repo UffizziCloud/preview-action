@@ -188,6 +188,7 @@ jobs:
       - name: Determine Operation
         uses: actions/github-script@v6
         with:
+          compose-file-cache-key: ${{ inputs.compose-file-cache-key }}
           script: |
             let action = 'none'; // default
             const { PR_NUMBER, DEPLOYMENT_ID } = process.env;
