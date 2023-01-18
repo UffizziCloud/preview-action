@@ -197,12 +197,13 @@ jobs:
               repo: context.repo.repo,
               pull_number: PR_NUMBER
             });
-            const cacheKey = core.getInput('compose-file-cache-key');
-            console.log(cacheKey);
-            console.log(pr);
+
+            if (core.isDebug()) {
+              console.log(pr);
+            }
 
             // Retain legacy behavior if we're passed this input empty.
-            if (cacheKey == '') {
+            if (core.getInput('compose-file-cache-key') == '') {
               if (DEPLOYMENT_ID == '') {
                 core.setFailed(`No compose file passed and no deployment found. No operation.`);
                 action = 'none';
@@ -424,6 +425,10 @@ jobs:
               repo: context.repo.repo,
               pull_number: PR_NUMBER
             });
+
+            if (core.isDebug()) {
+              console.log(pr);
+            }
 
             // `state` is either `open` or `closed`.
             if (pr.data.state == 'open') {
