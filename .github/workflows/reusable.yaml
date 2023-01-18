@@ -159,7 +159,7 @@ jobs:
             const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
             core.setOutput('request-token', token.trim())
             core.setOutput('request-token-url', runtimeUrl.trim())
-      # If PR event, look for an existing Preview Deployment.
+      # Look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
         uses: docker://uffizzi/cli:v1
@@ -176,8 +176,6 @@ jobs:
           ACCESS_TOKEN: ${{ secrets.access-token }}
           LOGGER_KEY: ${{ env.LOGGER_KEY }}
           CI_WORKFLOW: "true"
-      - name: DEBUG - Echo deployment ID
-        run: 'echo ${{ env.DEPLOYMENT_ID }}'
       - name: Find comment for deployment URL
         uses: peter-evans/find-comment@v2
         id: find-comment
@@ -187,32 +185,62 @@ jobs:
           body-includes: '${{ env.EXPECTED_URL }}'
           direction: last
 
-      - name: Delete Preview from Uffizzi
-        if: ${{ inputs.compose-file-cache-key == '' }}
-        uses: UffizziCloud/delete-preview-action@v1
+      - name: Determine Operation
+        uses: actions/github-script@v6
         with:
-          id: ${{ env.DEPLOYMENT_ID }}
-          username: ${{ inputs.username }}
-          server: ${{ inputs.server }}
-          project: ${{ inputs.project }}
-          password: ${{ secrets.password }}
-          request-token: ${{ steps.ci-job-token.outputs.request-token }}
-          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
-          logger-key: ${{ env.LOGGER_KEY }}
-      - name: Update Comment with Deletion
-        uses: peter-evans/create-or-update-comment@v2
-        if: ${{ inputs.compose-file-cache-key == '' }}
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ env.PR_NUMBER }}
-          body: |
-            Uffizzi Preview `${{ env.DEPLOYMENT_ID }}` was deleted.
-          edit-mode: replace
+          script: |
+            let action = 'none'; // default
+            const { PR_NUMBER, DEPLOYMENT_ID } = process.env;
+            const pr = github.rest.pulls.get({
+              github.context.owner,
+              github.context.repo,
+              PR_NUMBER
+            });
+
+            // Retain legacy behavior if we're passed this input empty.
+            if core.getInput('compose-file-cache-key' == '') {
+              if (DEPLOYMENT_ID == '') {
+                core.setFailed(`No compose file passed and no deployment found. No operation.`);
+                action = 'none';
+              } else {
+                console.log(`No compose file passed and ${DEPLOYMENT_ID} found. Deleting existing deployment.`);
+                action = 'delete';
+              }
+
+              core.exportVariable('UFFIZZI_ACTION', action);
+              // core.setOutput('action', action);
+              return;
+            }
+
+            // `state` is either `open` or `closed`.
+            if (pr.state == 'open') {
+              if (DEPLOYMENT_ID == '') {
+                console.log(`PR ${PR_NUMBER} is open but no deployment found. Creating new deployment.`);
+                action = 'create';
+              } else {
+                console.log(`PR ${PR_NUMBER} is open and ${DEPLOYMENT_ID} found. Updating existing deployment.`);
+                action = 'update';
+              }
+            } else if (pr.state == 'closed' {
+              if (DEPLOYMENT_ID == '') {
+                core.setFailed(`PR ${PR_NUMBER} is closed but no deployment found. No operation.`);
+                action = 'none';
+              } else {
+                console.log(`PR ${PR_NUMBER} is closed and ${DEPLOYMENT_ID} found. Deleting existing deployment.`);
+                action = 'delete';
+              }
+            } else {
+              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor `\closed\` but \`${pr.state}\`.);
+            }
+
+            core.exportVariable('UFFIZZI_ACTION', action);
+            // core.setOutput('action', action);
+            return;
 
       - name: Create or Update Comment with Deployment Notification
         id: notification
         uses: peter-evans/create-or-update-comment@v2
-        if: ${{ inputs.compose-file-cache-key != '' }}
+        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
@@ -227,20 +255,20 @@ jobs:
           edit-mode: replace
 
       - name: Checkout commit
-        if: ${{ inputs.compose-file-cache-key != '' }}
+        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
         uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - name: Fetch cached Compose File
         id: cache
-        if: ${{ inputs.compose-file-cache-key != '' }}
+        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
         uses: actions/cache@v3
         with:
           path: ${{ inputs.compose-file-cache-path }}
           key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy New Preview
         id: create-preview
-        if: ${{ env.DEPLOYMENT_ID == '' && inputs.compose-file-cache-key != '' }}
+        if: ${{ env.UFFIZZI_ACTION == 'create' }}
         uses: UffizziCloud/preview-action@v2
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
@@ -270,26 +298,10 @@ jobs:
           docker-registry-url: ${{ secrets.docker-registry-url }}
           logger-key: ${{ env.LOGGER_KEY }}
 
-      - name: Check if URL Authentication is in use
-        # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
-        id: url-auth-for-create
-        shell: bash
-        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo "URL_AUTHENTICATION=true" >> $GITHUB_ENV ; fi
-      - name: Confirm Successful Preview Deployment
-        if: ${{ env.DEPLOYMENT_ID == '' && github.event.action != 'closed' && env.URL_AUTHENTICATION == '' }}
-        uses: docker://curlimages/curl:7.84.0
-        with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
-      - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ env.DEPLOYMENT_ID == '' && github.event.action != 'closed' && env.URL_AUTHENTICATION == 'true' }}
-        uses: docker://curlimages/curl:7.84.0
-        with:
-          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.create-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
-
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
         id: update-preview
-        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' }}
+        if: ${{ github.event.action == 'update' }}
         with:
           preview-id: ${{ env.DEPLOYMENT_ID }}
           compose-file: ${{ inputs.compose-file-cache-path }}
@@ -318,19 +330,9 @@ jobs:
           docker-registry-url: ${{ secrets.docker-registry-url }}
           logger-key: ${{ env.LOGGER_KEY }}
 
-      - name: Confirm Successful Preview Deployment
-        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == '' }}
-        uses: docker://curlimages/curl:7.84.0
-        with:
-          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
-      - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ env.DEPLOYMENT_ID != '' && inputs.compose-file-cache-key != '' && env.URL_AUTHENTICATION == 'true' }}
-        uses: docker://curlimages/curl:7.84.0
-        with:
-          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ steps.update-preview.outputs.url }}${{ inputs.healthcheck-url-path }}
       - name: Job output consolidation
         id: outputs
-        if: ${{ github.event.action != 'closed' }}
+        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
         run: |
           export CREATE_URL=${{ steps.create-preview.outputs.url }}
           export CREATE_ID=${{ steps.create-preview.outputs.id }}
@@ -372,9 +374,25 @@ jobs:
           echo "expiration=$EXPIRATION" >> $GITHUB_OUTPUT
           echo "expiration_timestamp=$EXPIRATION_TIMESTAMP" >> $GITHUB_OUTPUT
 
+      - name: Check if URL Authentication is in use
+        # GHA limitation workaround https://github.com/actions/runner/issues/520#issuecomment-700579336
+        id: url-auth-for-create
+        shell: bash
+        run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo "URL_AUTHENTICATION=true" >> $GITHUB_ENV ; fi
+      - name: Confirm Successful Preview Deployment
+        if: ${{ env.UFFIZZI_ACTION != 'delete' && env.URL_AUTHENTICATION == '' }}
+        uses: docker://curlimages/curl:7.87.0
+        with:
+          args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ env.OUTPUT_URL }}${{ inputs.healthcheck-url-path }}
+      - name: Confirm Successful Preview Deployment with Authentication
+        if: ${{ env.UFFIZZI_ACTION != 'delete' && env.URL_AUTHENTICATION == 'true' }}
+        uses: docker://curlimages/curl:7.87.0
+        with:
+          args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ env.OUTPUT_URL }}${{ inputs.healthcheck-url-path }}
+
       - name: Create or Update Comment with Deployment URL
         uses: peter-evans/create-or-update-comment@v2
-        if: ${{ inputs.compose-file-cache-key != '' }}
+        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
         with:
           comment-id: ${{ steps.notification.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
@@ -388,4 +406,58 @@ jobs:
             ${{ env.EXPIRATION }}
 
             What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
+          edit-mode: replace
+
+      - name: Check for PR Closed During Deployment
+        uses: actions/github-script@v6
+        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
+        with:
+          script: |
+            let action = process.env.UFFIZZI_ACTION;
+            const { PR_NUMBER, DEPLOYMENT_ID } = process.env;
+            const pr = github.rest.pulls.get({
+              github.context.owner,
+              github.context.repo,
+              PR_NUMBER
+            });
+
+            // `state` is either `open` or `closed`.
+            if (pr.state == 'open') {
+              console.log(`PR ${PR_NUMBER} remains open.`);
+            } else if (pr.state == 'closed' {
+              // If the PR was closed while the deployment was happening, we want to delete what we just deployed.
+              if (DEPLOYMENT_ID == '') {
+                core.setFailed(`PR ${PR_NUMBER} is closed but no deployment found. No operation.`);
+                action = 'none';
+              } else {
+                console.log(`PR ${PR_NUMBER} is closed and ${DEPLOYMENT_ID} found. Deleting existing deployment.`);
+                action = 'delete';
+              }
+            } else {
+              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor `\closed\` but \`${pr.state}\`.);
+            }
+
+            core.exportVariable('UFFIZZI_ACTION', action);
+            return;
+
+      - name: Delete Preview from Uffizzi
+        if: ${{ env.UFFIZZI_ACTION == 'delete' }}
+        uses: UffizziCloud/delete-preview-action@v1
+        with:
+          id: ${{ env.DEPLOYMENT_ID }}
+          username: ${{ inputs.username }}
+          server: ${{ inputs.server }}
+          project: ${{ inputs.project }}
+          password: ${{ secrets.password }}
+          request-token: ${{ steps.ci-job-token.outputs.request-token }}
+          request-token-url: ${{ steps.ci-job-token.outputs.request-token-url }}
+          logger-key: ${{ env.LOGGER_KEY }}
+      - name: Update Comment with Deletion
+        uses: peter-evans/create-or-update-comment@v2
+        if: ${{ env.UFFIZZI_ACTION == 'delete' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            Uffizzi Preview `${{ env.DEPLOYMENT_ID }}` was deleted.
           edit-mode: replace
