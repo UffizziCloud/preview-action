@@ -198,7 +198,7 @@ jobs:
             });
 
             // Retain legacy behavior if we're passed this input empty.
-            if core.getInput('compose-file-cache-key' == '') {
+            if (core.getInput('compose-file-cache-key') == '') {
               if (DEPLOYMENT_ID == '') {
                 core.setFailed(`No compose file passed and no deployment found. No operation.`);
                 action = 'none';
@@ -221,7 +221,7 @@ jobs:
                 console.log(`PR ${PR_NUMBER} is open and ${DEPLOYMENT_ID} found. Updating existing deployment.`);
                 action = 'update';
               }
-            } else if (pr.state == 'closed' {
+            } else if (pr.state == 'closed') {
               if (DEPLOYMENT_ID == '') {
                 core.setFailed(`PR ${PR_NUMBER} is closed but no deployment found. No operation.`);
                 action = 'none';
@@ -230,7 +230,7 @@ jobs:
                 action = 'delete';
               }
             } else {
-              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor `\closed\` but \`${pr.state}\`.);
+              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor `\closed\` but \`${pr.state}\`.`);
             }
 
             core.exportVariable('UFFIZZI_ACTION', action);
@@ -424,7 +424,7 @@ jobs:
             // `state` is either `open` or `closed`.
             if (pr.state == 'open') {
               console.log(`PR ${PR_NUMBER} remains open.`);
-            } else if (pr.state == 'closed' {
+            } else if (pr.state == 'closed') {
               // If the PR was closed while the deployment was happening, we want to delete what we just deployed.
               if (DEPLOYMENT_ID == '') {
                 core.setFailed(`PR ${PR_NUMBER} is closed but no deployment found. No operation.`);
@@ -434,7 +434,7 @@ jobs:
                 action = 'delete';
               }
             } else {
-              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor `\closed\` but \`${pr.state}\`.);
+              core.setFailed(`Fatal exception: PR ${PR_NUMBER} is neither \`open\` nor `\closed\` but \`${pr.state}\`.`);
             }
 
             core.exportVariable('UFFIZZI_ACTION', action);
