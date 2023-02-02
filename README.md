@@ -137,7 +137,7 @@ URL path that will be appended to the preview URL where the reusable workflow wi
 
 #### `description`
 
-Add extra description to the PR comment.
+If specified, this text string will be added to each comment this workflow makes on the pull request issue. The default is a link to learn more about Uffizzi.
 
 ## Uffizzi Accounts
 
