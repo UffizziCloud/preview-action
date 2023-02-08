@@ -159,6 +159,21 @@ jobs:
             const runtimeUrl = process.env['ACTIONS_ID_TOKEN_REQUEST_URL']
             core.setOutput('request-token', token.trim())
             core.setOutput('request-token-url', runtimeUrl.trim())
+
+      - name: Checkout commit
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fetch cached Compose File
+        id: cache
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.compose-file-cache-path }}
+          key: ${{ inputs.compose-file-cache-key }}
+
       # Look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
@@ -205,7 +220,7 @@ jobs:
             // Retain legacy behavior if we're passed this input empty.
             if (core.getInput('compose-file-cache-key') == '') {
               if (DEPLOYMENT_ID == '') {
-                core.setFailed(`No compose file passed and no deployment found. No operation.`);
+                core.warning(`No compose file passed and no deployment found. No operation.`);
                 action = 'none';
               } else {
                 console.log(`No compose file passed and ${DEPLOYMENT_ID} found. Deleting existing deployment.`);
@@ -228,7 +243,7 @@ jobs:
               }
             } else if (pr.data.state == 'closed') {
               if (DEPLOYMENT_ID == '') {
-                core.setFailed(`PR ${PR_NUMBER} is closed but no deployment found. No operation.`);
+                core.warning(`PR ${PR_NUMBER} is closed but no deployment found. No operation.`);
                 action = 'none';
               } else {
                 console.log(`PR ${PR_NUMBER} is closed and ${DEPLOYMENT_ID} found. Deleting existing deployment.`);
@@ -245,7 +260,7 @@ jobs:
       - name: Create or Update Comment with Deployment Notification
         id: notification
         uses: peter-evans/create-or-update-comment@v2
-        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
@@ -259,18 +274,6 @@ jobs:
             What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
           edit-mode: replace
 
-      - name: Checkout commit
-        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-      - name: Fetch cached Compose File
-        id: cache
-        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
-        uses: actions/cache@v3
-        with:
-          path: ${{ inputs.compose-file-cache-path }}
-          key: ${{ inputs.compose-file-cache-key }}
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.UFFIZZI_ACTION == 'create' }}
@@ -337,7 +340,7 @@ jobs:
 
       - name: Job output consolidation
         id: outputs
-        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
         run: |
           export CREATE_URL=${{ steps.create-preview.outputs.url }}
           export CREATE_ID=${{ steps.create-preview.outputs.id }}
@@ -353,6 +356,7 @@ jobs:
           echo "Deployment ID $OUTPUT_ID at $OUTPUT_URL"
 
           echo "OUTPUT_ID=$OUTPUT_ID" >> $GITHUB_ENV
+          echo "DEPLOYMENT_ID=$OUTPUT_ID" >> $GITHUB_ENV
           echo "OUTPUT_URL=$OUTPUT_URL" >> $GITHUB_ENV
           echo "OUTPUT_CONTAINERS=$OUTPUT_CONTAINERS" >> $GITHUB_ENV
 
@@ -385,19 +389,19 @@ jobs:
         shell: bash
         run: if [ -z "${{ secrets.url-password }}" ]; then echo "No URL authentication."; else echo "URL_AUTHENTICATION=true" >> $GITHUB_ENV ; fi
       - name: Confirm Successful Preview Deployment
-        if: ${{ env.UFFIZZI_ACTION != 'delete' && env.URL_AUTHENTICATION == '' }}
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) && env.URL_AUTHENTICATION == '' }}
         uses: docker://curlimages/curl:7.87.0
         with:
           args: --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ env.OUTPUT_URL }}${{ inputs.healthcheck-url-path }}
       - name: Confirm Successful Preview Deployment with Authentication
-        if: ${{ env.UFFIZZI_ACTION != 'delete' && env.URL_AUTHENTICATION == 'true' }}
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) && env.URL_AUTHENTICATION == 'true' }}
         uses: docker://curlimages/curl:7.87.0
         with:
           args: --basic --user ${{ secrets.url-username }}:${{ secrets.url-password }} --retry 12 --retry-all-errors --retry-delay 0 --fail --location ${{ env.OUTPUT_URL }}${{ inputs.healthcheck-url-path }}
 
       - name: Create or Update Comment with Deployment URL
         uses: peter-evans/create-or-update-comment@v2
-        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
         with:
           comment-id: ${{ steps.notification.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
@@ -415,7 +419,7 @@ jobs:
 
       - name: Check for PR Closed During Deployment
         uses: actions/github-script@v6
-        if: ${{ env.UFFIZZI_ACTION != 'delete' }}
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
         with:
           script: |
             let action = process.env.UFFIZZI_ACTION;
@@ -436,7 +440,7 @@ jobs:
             } else if (pr.data.state == 'closed') {
               // If the PR was closed while the deployment was happening, we want to delete what we just deployed.
               if (DEPLOYMENT_ID == '') {
-                core.setFailed(`PR ${PR_NUMBER} is closed but no deployment found. No operation.`);
+                core.warning(`PR ${PR_NUMBER} is closed but no deployment found. No operation.`);
                 action = 'none';
               } else {
                 console.log(`PR ${PR_NUMBER} is closed and ${DEPLOYMENT_ID} found. Deleting existing deployment.`);
