@@ -160,20 +160,6 @@ jobs:
             core.setOutput('request-token', token.trim())
             core.setOutput('request-token-url', runtimeUrl.trim())
 
-      - name: Checkout commit
-        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Fetch cached Compose File
-        id: cache
-        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
-        uses: actions/cache@v3
-        with:
-          path: ${{ inputs.compose-file-cache-path }}
-          key: ${{ inputs.compose-file-cache-key }}
-
       # Look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
@@ -256,6 +242,20 @@ jobs:
             core.exportVariable('UFFIZZI_ACTION', action);
             // core.setOutput('action', action);
             return;
+
+      - name: Checkout commit
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fetch cached Compose File
+        id: cache
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.compose-file-cache-path }}
+          key: ${{ inputs.compose-file-cache-key }}
 
       - name: Create or Update Comment with Deployment Notification
         id: notification
