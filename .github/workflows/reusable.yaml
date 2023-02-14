@@ -265,7 +265,7 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
-            ## Uffizzi Preview Environment
+            ## Uffizzi Ephemeral Environment
 
             :cloud: ${{ env.EXPECTED_URL }}
 
@@ -406,7 +406,7 @@ jobs:
           comment-id: ${{ steps.notification.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
-            ## Uffizzi Preview Environment `${{ env.OUTPUT_ID }}`
+            ## Uffizzi Ephemeral Environment `${{ env.OUTPUT_ID }}`
 
             :cloud: ${{ env.EXPECTED_URL }}
 
