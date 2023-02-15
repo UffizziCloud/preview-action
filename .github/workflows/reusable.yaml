@@ -125,6 +125,9 @@ jobs:
   uffizzi-preview:
     name: "Create, Update, or Delete Preview on Uffizzi"
     runs-on: ubuntu-22.04
+    environment:
+      name: uffizzi
+      url: "${{ steps.outputs.outputs.url }}"
     outputs:
       url: ${{ steps.outputs.outputs.url }}
       id: ${{ steps.outputs.outputs.id }}
