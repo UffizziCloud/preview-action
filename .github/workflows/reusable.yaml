@@ -277,7 +277,7 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.UFFIZZI_ACTION == 'create' }}
-        uses: UffizziCloud/preview-action@v2
+        uses: UffizziCloud/preview-action@test_github_output_environment
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
