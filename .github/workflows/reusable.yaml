@@ -305,6 +305,8 @@ jobs:
           docker-registry-password: ${{ secrets.docker-registry-password }}
           docker-registry-url: ${{ secrets.docker-registry-url }}
           logger-key: ${{ env.LOGGER_KEY }}
+      - name: Echo output
+          run: echo "${{ steps.create-preview.outputs.url }}"
 
       - name: Update Existing Preview
         uses: UffizziCloud/update-preview-action@v1
