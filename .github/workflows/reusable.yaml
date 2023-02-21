@@ -165,20 +165,6 @@ jobs:
             core.setOutput('request-token', token.trim())
             core.setOutput('request-token-url', runtimeUrl.trim())
 
-      - name: Checkout commit
-        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-
-      - name: Fetch cached Compose File
-        id: cache
-        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
-        uses: actions/cache@v3
-        with:
-          path: ${{ inputs.compose-file-cache-path }}
-          key: ${{ inputs.compose-file-cache-key }}
-
       # Look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
@@ -262,6 +248,20 @@ jobs:
             // core.setOutput('action', action);
             return;
 
+      - name: Checkout commit
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Fetch cached Compose File
+        id: cache
+        if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.compose-file-cache-path }}
+          key: ${{ inputs.compose-file-cache-key }}
+
       - name: Create or Update Comment with Deployment Notification
         id: notification
         uses: peter-evans/create-or-update-comment@v2
@@ -270,7 +270,8 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
-            ## Uffizzi Preview Environment Deploying
+
+            ## Uffizzi Ephemeral Environment Deploying
 
             :cloud: ${{ env.EXPECTED_URL }}
 
@@ -411,7 +412,7 @@ jobs:
           comment-id: ${{ steps.notification.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
-            ## Uffizzi Preview Environment `${{ env.OUTPUT_ID }}`
+            ## Uffizzi Ephemeral Environment `${{ env.OUTPUT_ID }}`
 
             :cloud: ${{ env.EXPECTED_URL }}
 
