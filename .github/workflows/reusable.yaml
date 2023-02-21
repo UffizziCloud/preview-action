@@ -43,6 +43,11 @@ on:
         default: ''
         required: false
         type: string
+      description:
+        description: "Text string added to comment on pull request issue"
+        default: 'What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)!'
+        required: false
+        type: string
     secrets:
       access-token:
         description: 'Github pipeline token'
@@ -265,13 +270,13 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
-            ## Uffizzi Ephemeral Environment
+            ## Uffizzi Ephemeral Environment Deploying
 
             :cloud: ${{ env.EXPECTED_URL }}
 
             :gear: Updating now by workflow run [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).
 
-            What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
+            ${{ inputs.description }}
           edit-mode: replace
 
       - name: Deploy New Preview
@@ -414,7 +419,7 @@ jobs:
 
             ${{ env.EXPIRATION }}
 
-            What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)
+            ${{ inputs.description }}
           edit-mode: replace
 
       - name: Check for PR Closed During Deployment
