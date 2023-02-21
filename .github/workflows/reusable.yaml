@@ -270,7 +270,6 @@ jobs:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ env.PR_NUMBER }}
           body: |
-
             ## Uffizzi Ephemeral Environment Deploying
 
             :cloud: ${{ env.EXPECTED_URL }}
