@@ -309,7 +309,7 @@ jobs:
         run: echo "${{ steps.create-preview.outputs.containers_uri }}"
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@v1
+        uses: UffizziCloud/update-preview-action@feature/test_github_output
         id: update-preview
         if: ${{ env.UFFIZZI_ACTION == 'update' }}
         with:
