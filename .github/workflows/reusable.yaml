@@ -312,7 +312,7 @@ jobs:
           logger-key: ${{ env.LOGGER_KEY }}
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@v1
+        uses: UffizziCloud/update-preview-action@feature/fix_github_output
         id: update-preview
         if: ${{ env.UFFIZZI_ACTION == 'update' }}
         with:
