@@ -150,10 +150,10 @@ uses: UffizziCloud/preview-action@v2
 with:
   compose-file: 'docker-compose.uffizzi.yaml'
   server: 'https://app.uffizzi.com'
-  secrets:
-    access-token: ${{ secrets.GITHUB_TOKEN }}
-    url-username: admin
-    url-password: ${{ secrets.URL_PASSWORD }}
+secrets:
+  access-token: ${{ secrets.GITHUB_TOKEN }}
+  url-username: admin
+  url-password: ${{ secrets.URL_PASSWORD }}
 permissions:
   contents: read
   pull-requests: write
