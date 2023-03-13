@@ -45,7 +45,7 @@ on:
         type: string
       description:
         description: "Text string added to comment on pull request issue"
-        default: 'What is Uffizzi? [Learn more](https://github.com/UffizziCloud/uffizzi)!'
+        default: 'What is Uffizzi? [Learn more](https://www.uffizzi.com)!'
         required: false
         type: string
     secrets:
