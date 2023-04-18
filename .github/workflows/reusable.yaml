@@ -48,6 +48,11 @@ on:
         default: 'What is Uffizzi? [Learn more](https://www.uffizzi.com)!'
         required: false
         type: string
+     environment:
+        description: 'Custom environment for the deployed preview'
+        default: 'uffizzi'
+        required: false
+        type: string
     secrets:
       access-token:
         description: 'Github pipeline token'
@@ -131,7 +136,7 @@ jobs:
     name: "Create, Update, or Delete Preview on Uffizzi"
     runs-on: ubuntu-22.04
     environment:
-      name: uffizzi
+      name: ${{ inputs.environment }}
       url: "${{ steps.outputs.outputs.url }}"
     outputs:
       url: ${{ steps.outputs.outputs.url }}
