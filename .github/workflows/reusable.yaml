@@ -260,7 +260,7 @@ jobs:
         if: ${{ contains(fromJSON('["create", "update"]'), env.UFFIZZI_ACTION) }}
         uses: actions/checkout@v3
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{ inputs.git-ref || github.event.pull_request.head.sha }}
 
       - name: Fetch cached Compose File
         id: cache
