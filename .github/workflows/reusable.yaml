@@ -48,7 +48,7 @@ on:
         default: 'What is Uffizzi? [Learn more](https://www.uffizzi.com)!'
         required: false
         type: string
-     environment:
+      environment:
         description: 'Custom environment for the deployed preview'
         default: 'uffizzi'
         required: false
