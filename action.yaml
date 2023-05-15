@@ -86,6 +86,8 @@ inputs:
 outputs:
   url:
     description: 'URL where preview was deployed, if successful'
+  proxy_url:
+    description: 'URL where show preview process deploying or redirect to preview after deployed'
   id:
     description: 'ID of preview for later reference'
   containers_uri:
