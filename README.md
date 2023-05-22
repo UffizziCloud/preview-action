@@ -1,14 +1,27 @@
 # On-demand Preview Environments
 
-Deploy a Preview Environment for every pull request. Supports APIs, frontends, backends, databases, microservices, binaries and command-line tools.
+Deploy a Preview Environment (AKA "Ephemeral Environment") for every pull request. Supports APIs, frontends, backends, databases, microservices, binaries and command-line tools.
 
 Uffizzi integrates as a step in your GitHub Actions pipeline to manage on-demand, ephemeral test environments for every feature branch/pull request. Preview Environments are deployed on [Uffizzi Cloud](https://uffizzi.com) (SaaS) or your own installation of [open-source Uffizzi](https://github.com/UffizziCloud/uffizzi_app) (self-hosting requires Kubernetes).
 
 ## Reusable Workflow (recommended)
 
-We've published a [Reusable Workflow](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow) for your GitHub Actions. This can handle creating, updating, and deleting Uffizzi Preview Environments. It will also publish Preview Environment URLs as a comment to your pull request issues.
+We've published a [Reusable Workflow](https://docs.github.com/en/actions/using-workflows/reusing-workflows#calling-a-reusable-workflow) for your GitHub Actions. This can handle creating, updating, and deleting Uffizzi Preview Environments. It will also publish Preview Environment URLs as a comment to your pull request issues. 
 
 💡 We recommend using this reusable workflow instead of using the individual actions for [create](https://github.com/UffizziCloud/preview-action), [update](https://github.com/UffizziCloud/update-preview-action), and [delete](https://github.com/UffizziCloud/delete-preview-action).
+
+### Example usage
+
+```
+    uses: UffizziCloud/preview-action/.github/workflows/reusable.yaml@v2
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    with:
+      compose-file-cache-key: ${{ needs.render-compose-file.outputs.compose-file-cache-key }}
+      compose-file-cache-path: ${{ needs.render-compose-file.outputs.compose-file-cache-path }}
+      server: https://app.uffizzi.com/
+```
+
+
 
 ### Workflow Calling Example
 
