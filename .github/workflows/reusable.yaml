@@ -176,7 +176,7 @@ jobs:
       # Look for an existing Preview Deployment.
       - name: Find Deployment for this Pull Request
         id: find-deployment
-        uses: docker://uffizzi/cli:v1
+        uses: docker://uffizzi/cli:v2
         with:
           entrypoint: bash
           args: -c "/root/docker-entrypoint.sh && echo DEPLOYMENT_ID=$(/usr/local/bundle/bin/uffizzi preview list --filter \"github.repository=${{ github.repository }} github.event.number=$PR_NUMBER\") >> $GITHUB_ENV"
@@ -290,7 +290,7 @@ jobs:
       - name: Deploy New Preview
         id: create-preview
         if: ${{ env.UFFIZZI_ACTION == 'create' }}
-        uses: UffizziCloud/preview-action@v2
+        uses: UffizziCloud/preview-action@v3
         with:
           compose-file: ${{ inputs.compose-file-cache-path }}
           username: ${{ inputs.username }}
@@ -320,7 +320,7 @@ jobs:
           logger-key: ${{ env.LOGGER_KEY }}
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@v1
+        uses: UffizziCloud/update-preview-action@v2
         id: update-preview
         if: ${{ env.UFFIZZI_ACTION == 'update' }}
         with:
@@ -468,7 +468,7 @@ jobs:
 
       - name: Delete Preview from Uffizzi
         if: ${{ env.UFFIZZI_ACTION == 'delete' }}
-        uses: UffizziCloud/delete-preview-action@v1
+        uses: UffizziCloud/delete-preview-action@v2
         with:
           id: ${{ env.DEPLOYMENT_ID }}
           username: ${{ inputs.username }}
