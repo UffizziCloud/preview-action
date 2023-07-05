@@ -320,7 +320,7 @@ jobs:
           logger-key: ${{ env.LOGGER_KEY }}
 
       - name: Update Existing Preview
-        uses: UffizziCloud/update-preview-action@v1
+        uses: UffizziCloud/update-preview-action@v2
         id: update-preview
         if: ${{ env.UFFIZZI_ACTION == 'update' }}
         with:
@@ -468,7 +468,7 @@ jobs:
 
       - name: Delete Preview from Uffizzi
         if: ${{ env.UFFIZZI_ACTION == 'delete' }}
-        uses: UffizziCloud/delete-preview-action@v1
+        uses: UffizziCloud/delete-preview-action@v2
         with:
           id: ${{ env.DEPLOYMENT_ID }}
           username: ${{ inputs.username }}
