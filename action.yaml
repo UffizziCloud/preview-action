@@ -114,8 +114,8 @@ runs:
     UFFIZZI_PROJECT: ${{ inputs.project }}
     GITHUB_USERNAME: ${{ inputs.ghcr-username }}
     GITHUB_ACCESS_TOKEN: ${{ inputs.ghcr-access-token }}
-    REQUEST_TOKEN: ${{ inputs.request-token}}
-    REQUEST_TOKEN_URL: ${{ inputs.request-token-url }}
+    ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ inputs.request-token}}
+    ACTIONS_ID_TOKEN_REQUEST_URL: ${{ inputs.request-token-url }}
     DOCKERHUB_USERNAME: ${{ inputs.dockerhub-username }}
     DOCKERHUB_PASSWORD: ${{ inputs.dockerhub-password}}
     ACR_USERNAME: ${{ inputs.acr-username }}
